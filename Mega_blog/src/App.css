@@ -1,8 +1,47 @@
 #root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
+  width: 100%;
   text-align: center;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+body {
+  background: linear-gradient(to bottom, #f8f9fc, #e4e7f2); /* Soft gradient background */
+  color: #333333; /* Dark gray text */
+  font-family: 'Arial', sans-serif;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.main-content {
+  flex: 1; /* Pushes footer to the bottom */
+}
+
+header {
+  background-color: #ffffff; /* White header */
+  color: #6A0DAD; /* Vibrant purple text */
+  padding: 15px 20px;
+  text-align: center;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+footer {
+  background-color: #ffffff; /* White footer */
+  color: #6A0DAD; /* Vibrant purple text */
+  padding: 15px 20px;
+  text-align: center;
+  box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
+  margin-top: auto;
 }
 
 .logo {
@@ -12,10 +51,7 @@
   transition: filter 300ms;
 }
 .logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+  filter: drop-shadow(0 0 2em #6A0DAD); /* Purple hover effect */
 }
 
 @keyframes logo-spin {
@@ -35,8 +71,25 @@
 
 .card {
   padding: 2em;
+  background-color: #ffffff; /* White background for cards */
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 .read-the-docs {
-  color: #888;
+  color: #555555; /* Slightly darker gray for readability */
+}
+
+button {
+  background-color: #6A0DAD; /* Purple button */
+  color: #ffffff;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+button:hover {
+  background-color: #550A91; /* Darker purple on hover */
 }

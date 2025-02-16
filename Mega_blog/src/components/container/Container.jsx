@@ -1,27 +1,7 @@
-import React from 'react';
-import PropTypes from 'prop-types';
+import React from "react";
 
-function Container({ children, className = '', padding = 'px-4', maxWidth = 'max-w-7xl' }) {
-  return (
-    <div className={`${maxWidth} ${padding} mx-auto ${className}`}>
-      {children}
-    </div>
-  );
+function Container({ children }) {
+  return <div className="w-full max-w-7xl mx-auto px-4">{children}</div>;
 }
-
-// Define default values and type checking for props
-Container.propTypes = {
-  children: PropTypes.node.isRequired,
-  className: PropTypes.string,
-  padding: PropTypes.string,
-  maxWidth: PropTypes.string,
-};
-
-// Default props
-Container.defaultProps = {
-  className: '',
-  padding: 'px-4',
-  maxWidth: 'max-w-7xl',
-};
 
 export default Container;
