@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { login as authLogin } from "../store/authSlice";
-import { setPosts } from "../store/postSlice"; // Import post action
-import { Button, Input, Logo } from "./index";
+import { setPosts } from "../store/postSlice";
+import { Button, Input } from "./index"; // Removed Logo import
 import { useDispatch } from "react-redux";
 import authService from "../appwrite/auth";
-import appwriteService from "../appwrite/config"; // Import appwrite service
+import appwriteService from "../appwrite/config";
 import { useForm } from "react-hook-form";
 
 function Login() {
@@ -17,74 +17,77 @@ function Login() {
   const login = async (data) => {
     setError("");
     try {
-      // Perform login
       const session = await authService.login(data);
       if (session) {
         const userData = await authService.getCurrentUser();
 
-        // Clear previous posts before fetching new posts
-        dispatch(setPosts([])); // Clear posts in Redux
-
-        // Fetch the new user's posts after successful login
+        dispatch(setPosts([])); // Clear previous posts
         const posts = await appwriteService.fetchUserPosts(userData.$id);
 
-        // Store the new user data and posts in Redux
         if (userData) {
-          dispatch(authLogin({ userData })); // Store user data
-          dispatch(setPosts(posts)); // Store new posts
+          dispatch(authLogin({ userData }));
+          dispatch(setPosts(posts));
         }
-        navigate("/"); // Navigate to the home page or wherever you want after login
+        navigate("/");
       }
     } catch (error) {
-      setError(error.message); // Display any error that occurs during login
+      setError(error.message);
     }
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-[#f8f9fc] to-[#e4e7f2]">
-      <div className="w-full max-w-lg bg-white rounded-xl p-10 shadow-lg border border-gray-300">
-        <div className="mb-4 flex justify-center">
-          <span className="inline-block w-24">
-            <Logo width="100%" />
-          </span>
+    <div className="flex items-center justify-center min-h-screen bg-white">
+      <div className="w-full max-w-md bg-white rounded-xl p-10 shadow-2xl border border-gray-300 transform transition-all hover:scale-105 hover:shadow-3xl">
+        <div className="mb-6 flex justify-center">
+          <img
+            src="/typenest.jpg" //
+            alt="Logo"
+            className="w-28 h-auto"
+          />
         </div>
-        <h2 className="text-center text-2xl font-bold text-gray-800">
+        <h2 className="text-center text-3xl font-extrabold text-gray-800 mb-4">
           Sign in to your account
         </h2>
         <p className="mt-2 text-center text-gray-600">
           Don&apos;t have an account?&nbsp;
           <Link
             to="/signup"
-            className="text-[#6A0DAD] hover:underline font-medium"
+            className="text-purple-600 hover:underline font-medium"
           >
             Sign Up
           </Link>
         </p>
-        {error && <p className="text-red-600 mt-4 text-center">{error}</p>}
-        <form onSubmit={handleSubmit(login)} className="mt-6">
+        {error && (
+          <div className="bg-red-100 text-red-800 p-3 rounded-md mt-4 text-center">
+            {error}
+          </div>
+        )}
+        <form onSubmit={handleSubmit(login)} className="mt-6 space-y-6">
           <div className="space-y-4">
             <Input
               label="Email:"
               placeholder="Enter your email"
               type="email"
               {...register("email", {
-                required: true,
+                required: "Email is required",
                 validate: {
                   matchPattern: (value) =>
                     /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/.test(value) ||
                     "Enter a valid email address",
                 },
               })}
+              className="p-4 rounded-lg border-2 border-gray-300 focus:outline-none focus:border-purple-500"
             />
             <Input
               label="Password:"
               type="password"
               placeholder="Enter your password"
-              {...register("password", { required: true })}
+              {...register("password", { required: "Password is required" })}
+              className="p-4 rounded-lg border-2 border-gray-300 focus:outline-none focus:border-purple-500"
             />
             <Button
               type="submit"
-              className="w-full bg-[#6A0DAD] hover:bg-[#550A91]"
+              className="w-full bg-purple-600 hover:bg-purple-700 text-white text-lg font-semibold py-3 px-6 rounded-lg transition duration-300"
             >
               Sign in
             </Button>

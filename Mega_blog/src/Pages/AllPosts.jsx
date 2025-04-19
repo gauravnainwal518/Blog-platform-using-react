@@ -1,22 +1,19 @@
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
-import appwriteService from "../appwrite/config"; // ✅ Make sure this is correct
+import appwriteService from "../appwrite/config";
 import Button from "../components/Button";
 import parse from "html-react-parser";
 
 const AllPosts = () => {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
-
-  // ✅ Get current logged-in user from Redux
   const userData = useSelector((state) => state.auth.userData);
 
   useEffect(() => {
     const fetchPosts = async () => {
       try {
         if (userData?.$id) {
-          // ✅ Get posts only for current user
           const fetchedPosts = await appwriteService.getPostsByUser(
             userData.$id
           );
@@ -36,37 +33,44 @@ const AllPosts = () => {
   }, [userData]);
 
   return (
-    <div className="all-posts-container p-8">
-      <h1 className="text-3xl font-bold text-center mb-6">All Posts</h1>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 mt-20 bg-white min-h-screen">
+      <h1 className="text-4xl font-bold text-center text-gray-800 mb-10">
+        Your Posts
+      </h1>
+
       {loading ? (
-        <p>Loading posts...</p>
+        <div className="text-center text-lg text-gray-500 animate-pulse">
+          Loading posts...
+        </div>
+      ) : posts.length === 0 ? (
+        <div className="text-center text-gray-500 text-xl">
+          You haven't written any posts yet.
+        </div>
       ) : (
-        <div className="post-list flex flex-wrap gap-6 justify-center">
-          {posts.length === 0 ? (
-            <p>No posts available</p>
-          ) : (
-            posts.map((post) => (
-              <div
-                key={post.$id}
-                className="post-item w-72 p-4 bg-gray-100 rounded-lg shadow-md"
-              >
-                <h2 className="text-xl font-semibold text-gray-800 mb-2">
+        <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+          {posts.map((post) => (
+            <div
+              key={post.$id}
+              className="bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition duration-300 overflow-hidden flex flex-col justify-between"
+            >
+              <div className="p-5">
+                <h2 className="text-xl font-semibold text-gray-900 mb-3">
                   {post.title}
                 </h2>
-                <div className="text-gray-600 mb-4 line-clamp-3">
+                <div className="text-gray-700 line-clamp-3 text-sm">
                   {parse(post.content || "")}
                 </div>
+              </div>
 
-                {/* Log the slug for each post */}
-                {/*console.log("Post Slug:", post.slug)*/}
+              <div className="px-5 pb-5 mt-auto">
                 <Link to={`/post/${post.slug}`}>
-                  <Button bgColor="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded">
+                  <Button bgColor="bg-blue-600 hover:bg-blue-700 text-white w-full">
                     Read More
                   </Button>
                 </Link>
               </div>
-            ))
-          )}
+            </div>
+          ))}
         </div>
       )}
     </div>
