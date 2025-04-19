@@ -4,9 +4,9 @@ import { Input, Select, RTE, Button } from "../../components/index";
 import appwriteService from "../../appwrite/config";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
+import { useDispatch } from "react-redux"; // Importing dispatch
 
 function PostForm({ post }) {
-  // Accept `post` as a prop
   const { register, handleSubmit, watch, setValue, control, getValues } =
     useForm({
       defaultValues: {
@@ -18,12 +18,44 @@ function PostForm({ post }) {
     });
 
   const navigate = useNavigate();
+  const dispatch = useDispatch(); // Initialize dispatch
   const userData = useSelector((state) => state.auth.userData);
 
   const submit = async (data) => {
     if (post) {
-      // Update post logic...
+      // Update post logic
+      const updatedData = {
+        title: data.title,
+        slug: data.slug,
+        content: data.content,
+        status: data.status,
+      };
+
+      if (data.image && data.image.length > 0) {
+        const file = await appwriteService.uploadFile(data.image[0]);
+        if (file) {
+          updatedData.featuredImageFile = data.image[0];
+        }
+      }
+
+      try {
+        const response = await appwriteService.updatePost(
+          post.$id,
+          updatedData
+        );
+        if (response) {
+          navigate(`/post/${post.$id}`);
+          // Optionally dispatch the updated post to the Redux store
+          dispatch({
+            type: "posts/updatePost",
+            payload: response, // Assuming you have an updatePost action in the slice
+          });
+        }
+      } catch (error) {
+        console.error("Error updating post:", error);
+      }
     } else {
+      // Create post logic
       if (!data.image || data.image.length === 0) {
         alert("Please upload a featured image.");
         return;
@@ -38,7 +70,7 @@ function PostForm({ post }) {
           slug: data.slug,
           content: data.content,
           status: data.status,
-          featuredImageFile: data.image[0], // Pass the file object
+          featuredImageFile: data.image[0],
           userId: userData.$id,
         });
 
@@ -47,12 +79,17 @@ function PostForm({ post }) {
           slug: data.slug,
           content: data.content,
           status: data.status,
-          featuredImageFile: data.image[0], // Pass the file object
+          featuredImageFile: data.image[0],
           userId: userData.$id,
         });
 
         if (dbPost) {
           navigate(`/post/${dbPost.$id}`);
+          // Dispatch the new post to the Redux store
+          dispatch({
+            type: "posts/addPost", // Assuming you have an addPost action in the slice
+            payload: dbPost,
+          });
         }
       }
     }
@@ -63,8 +100,8 @@ function PostForm({ post }) {
       return value
         .trim()
         .toLowerCase()
-        .replace(/^[a-zA-Z\d\s]+/g, "-")
-        .replace(/\s/g, "-");
+        .replace(/[^a-z0-9]+/g, "-") // Replace non-alphanumeric chars with hyphen
+        .replace(/^-+|-+$/g, ""); // Remove leading/trailing hyphens
     }
     return "";
   }, []);

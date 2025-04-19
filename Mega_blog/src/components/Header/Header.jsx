@@ -20,8 +20,10 @@ function Header() {
       <Container>
         <nav className="flex items-center justify-between">
           {/* Logo */}
-          <Link to="/">
+          <Link to="/" className="flex items-center space-x-2">
             <Logo width="70px" />
+            {/* You can remove the next line if you don't want duplicate text */}
+            {/* <span className="text-2xl font-semibold text-gray-800 tracking-wide">LumiBlog</span> */}
           </Link>
 
           {/* Navigation Items */}
@@ -32,7 +34,7 @@ function Header() {
                   <li key={item.name}>
                     <button
                       onClick={() => navigate(item.slug)}
-                      className="text-gray-700 font-medium px-4 py-2 rounded-lg transition-all duration-300 hover:bg-purple-100 hover:text-purple-600"
+                      className="text-gray-700 font-bold px-4 py-2 rounded-lg transition-all duration-300 hover:bg-purple-100 hover:text-purple-600"
                     >
                       {item.name}
                     </button>

@@ -1,3 +1,14 @@
+:root {
+  --primary-color: #6A0DAD; /* Vibrant purple */
+  --secondary-color: #550A91; /* Darker purple for hover */
+  --background-color: #f8f9fc; /* Light background */
+  --text-color: #333333; /* Dark gray text */
+  --footer-bg: #ffffff; /* White footer */
+  --header-bg: #ffffff; /* White header */
+  --card-bg: #ffffff; /* White card background */
+  --card-shadow: rgba(0, 0, 0, 0.1); /* Soft shadow */
+}
+
 #root {
   width: 100%;
   text-align: center;
@@ -7,14 +18,25 @@
 }
 
 body {
-  background: linear-gradient(to bottom, #f8f9fc, #e4e7f2); /* Soft gradient background */
-  color: #333333; /* Dark gray text */
+  background: linear-gradient(to bottom, var(--background-color), #e4e7f2);
+  color: var(--text-color);
   font-family: 'Arial', sans-serif;
   margin: 0;
   padding: 0;
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  overflow-y: scroll; /* Keep vertical scrolling */
+}
+
+/* Hide vertical scrollbar */
+body::-webkit-scrollbar {
+  display: none;
+}
+
+/* Optionally hide horizontal scrollbar too */
+body::-webkit-scrollbar:horizontal {
+  display: none;
 }
 
 .app-container {
@@ -24,23 +46,23 @@ body {
 }
 
 .main-content {
-  flex: 1; /* Pushes footer to the bottom */
+  flex: 1;
 }
 
 header {
-  background-color: #ffffff; /* White header */
-  color: #6A0DAD; /* Vibrant purple text */
+  background-color: var(--header-bg);
+  color: var(--primary-color);
   padding: 15px 20px;
   text-align: center;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 5px var(--card-shadow);
 }
 
 footer {
-  background-color: #ffffff; /* White footer */
-  color: #6A0DAD; /* Vibrant purple text */
+  background-color: var(--footer-bg);
+  color: var(--primary-color);
   padding: 15px 20px;
   text-align: center;
-  box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 -2px 5px var(--card-shadow);
   margin-top: auto;
 }
 
@@ -50,8 +72,9 @@ footer {
   will-change: filter;
   transition: filter 300ms;
 }
+
 .logo:hover {
-  filter: drop-shadow(0 0 2em #6A0DAD); /* Purple hover effect */
+  filter: drop-shadow(0 0 2em var(--primary-color));
 }
 
 @keyframes logo-spin {
@@ -71,9 +94,9 @@ footer {
 
 .card {
   padding: 2em;
-  background-color: #ffffff; /* White background for cards */
+  background-color: var(--card-bg);
   border-radius: 10px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 10px var(--card-shadow);
 }
 
 .read-the-docs {
@@ -81,7 +104,7 @@ footer {
 }
 
 button {
-  background-color: #6A0DAD; /* Purple button */
+  background-color: var(--primary-color);
   color: #ffffff;
   border: none;
   padding: 10px 15px;
@@ -91,5 +114,21 @@ button {
 }
 
 button:hover {
-  background-color: #550A91; /* Darker purple on hover */
+  background-color: var(--secondary-color);
+}
+
+/* Accessibility Focus State for Buttons */
+button:focus {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+  .card {
+    padding: 1em;
+  }
+  header, footer {
+    padding: 10px;
+  }
 }

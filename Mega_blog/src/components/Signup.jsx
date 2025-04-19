@@ -13,16 +13,18 @@ function Signup() {
   const { register, handleSubmit } = useForm();
 
   const create = async (data) => {
-    setError("");
+    setError(""); // Reset error message
     try {
-      const userData = await authService.createAccount(data);
-      if (userData) {
-        const userData = await authService.getCurrentUser();
-        if (userData) dispatch(login(userData));
-        navigate("/");
+      const newUserData = await authService.createAccount(data); // Create account
+      if (newUserData) {
+        const currentUserData = await authService.getCurrentUser(); // Fetch current user
+        if (currentUserData) {
+          dispatch(login(currentUserData)); // Store user data in Redux
+        }
+        navigate("/"); // Redirect to home page
       }
     } catch (error) {
-      setError(error.message);
+      setError(error.message); // Display error if registration fails
     }
   };
 
@@ -53,18 +55,18 @@ function Signup() {
             <Input
               label="Full Name: "
               placeholder="Enter your full name"
-              {...register("name", { required: true })}
+              {...register("name", { required: "Full name is required" })}
             />
             <Input
               label="Email: "
               placeholder="Enter your email"
               type="email"
               {...register("email", {
-                required: true,
+                required: "Email is required",
                 validate: {
-                  matchPatern: (value) =>
+                  matchPattern: (value) =>
                     /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/.test(value) ||
-                    "Email address must be a valid address",
+                    "Enter a valid email address",
                 },
               })}
             />
@@ -72,7 +74,13 @@ function Signup() {
               label="Password: "
               type="password"
               placeholder="Enter your password"
-              {...register("password", { required: true })}
+              {...register("password", {
+                required: "Password is required",
+                minLength: {
+                  value: 6,
+                  message: "Password must be at least 6 characters",
+                },
+              })}
             />
             <Button type="submit" className="w-full">
               Create Account

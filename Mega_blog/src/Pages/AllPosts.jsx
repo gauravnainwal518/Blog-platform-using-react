@@ -1,18 +1,29 @@
 import React, { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
-import appwriteService from "../appwrite/config"; // ✅ Correct import
+import appwriteService from "../appwrite/config"; // ✅ Make sure this is correct
 import Button from "../components/Button";
-import parse from "html-react-parser"; // ✅ For parsing HTML content
+import parse from "html-react-parser";
 
 const AllPosts = () => {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // ✅ Get current logged-in user from Redux
+  const userData = useSelector((state) => state.auth.userData);
+
   useEffect(() => {
     const fetchPosts = async () => {
       try {
-        const fetchedPosts = await appwriteService.getPosts(); // ✅ Now it exists!
-        setPosts(Array.isArray(fetchedPosts) ? fetchedPosts : []);
+        if (userData?.$id) {
+          // ✅ Get posts only for current user
+          const fetchedPosts = await appwriteService.getPostsByUser(
+            userData.$id
+          );
+          setPosts(Array.isArray(fetchedPosts) ? fetchedPosts : []);
+        } else {
+          setPosts([]);
+        }
       } catch (error) {
         console.error("Error fetching posts:", error);
         setPosts([]);
@@ -22,7 +33,8 @@ const AllPosts = () => {
     };
 
     fetchPosts();
-  }, []);
+  }, [userData]);
+
   return (
     <div className="all-posts-container p-8">
       <h1 className="text-3xl font-bold text-center mb-6">All Posts</h1>
@@ -42,8 +54,11 @@ const AllPosts = () => {
                   {post.title}
                 </h2>
                 <div className="text-gray-600 mb-4 line-clamp-3">
-                  {parse(post.content || "")} {/* ✅ Safely parse content */}
+                  {parse(post.content || "")}
                 </div>
+
+                {/* Log the slug for each post */}
+                {/*console.log("Post Slug:", post.slug)*/}
                 <Link to={`/post/${post.slug}`}>
                   <Button bgColor="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded">
                     Read More

@@ -1,9 +1,11 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { login as authLogin } from "../store/authSlice";
+import { setPosts } from "../store/postSlice"; // Import post action
 import { Button, Input, Logo } from "./index";
 import { useDispatch } from "react-redux";
 import authService from "../appwrite/auth";
+import appwriteService from "../appwrite/config"; // Import appwrite service
 import { useForm } from "react-hook-form";
 
 function Login() {
@@ -15,14 +17,26 @@ function Login() {
   const login = async (data) => {
     setError("");
     try {
+      // Perform login
       const session = await authService.login(data);
       if (session) {
         const userData = await authService.getCurrentUser();
-        if (userData) dispatch(authLogin(userData));
-        navigate("/");
+
+        // Clear previous posts before fetching new posts
+        dispatch(setPosts([])); // Clear posts in Redux
+
+        // Fetch the new user's posts after successful login
+        const posts = await appwriteService.fetchUserPosts(userData.$id);
+
+        // Store the new user data and posts in Redux
+        if (userData) {
+          dispatch(authLogin({ userData })); // Store user data
+          dispatch(setPosts(posts)); // Store new posts
+        }
+        navigate("/"); // Navigate to the home page or wherever you want after login
       }
     } catch (error) {
-      setError(error.message);
+      setError(error.message); // Display any error that occurs during login
     }
   };
 

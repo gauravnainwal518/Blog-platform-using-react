@@ -1,37 +1,47 @@
 import React from "react";
+import { Container, Logo } from "../index";
 import { Link } from "react-router-dom";
-import Logo from "../Logo";
 
 function Footer() {
   return (
-    <footer className="w-full bg-gradient-to-r from-gray-100 to-white text-gray-700 shadow-md mt-auto">
-      <div className="container mx-auto flex flex-col items-center py-6">
-        {/* Logo */}
-        <div className="mb-4">
-          <Logo width="100px" />
+    <footer className="bg-gradient-to-r from-gray-100 to-white shadow-md py-6 mt-10">
+      <Container>
+        <div className="flex justify-between items-center">
+          {/* Logo in Footer */}
+          <Link to="/" className="flex items-center space-x-2">
+            <Logo width="70px" />
+          </Link>
+
+          {/* Footer Navigation */}
+          <div className="flex justify-center items-center w-full">
+            <ul className="flex items-center space-x-6">
+              <li>
+                <Link
+                  to="/about"
+                  className="text-gray-700 font-bold hover:text-purple-600 transition-all duration-300"
+                >
+                  About
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/contact"
+                  className="text-gray-700 font-bold hover:text-purple-600 transition-all duration-300"
+                >
+                  Contact
+                </Link>
+              </li>
+            </ul>
+          </div>
         </div>
 
-        {/* Links */}
-        <div className="flex space-x-6">
-          <Link
-            className="text-base font-medium hover:text-gray-500 transition-colors"
-            to="/privacy-policy"
-          >
-            Privacy Policy
-          </Link>
-          <Link
-            className="text-base font-medium hover:text-gray-500 transition-colors"
-            to="/contact-us"
-          >
-            Contact Us
-          </Link>
+        {/* Footer Copyright */}
+        <div className="text-center text-gray-500 mt-6">
+          <p className="font-bold">
+            &copy; {new Date().getFullYear()} LumiBlog. All rights reserved.
+          </p>
         </div>
-
-        {/* Copyright */}
-        <p className="mt-4 text-sm">
-          &copy; {new Date().getFullYear()} All Rights Reserved by DevUI.
-        </p>
-      </div>
+      </Container>
     </footer>
   );
 }

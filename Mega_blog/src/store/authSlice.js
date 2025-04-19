@@ -11,17 +11,23 @@ const authSlice = createSlice({
   reducers: {
     login: (state, action) => {
       if (action.payload && action.payload.userData) {
-        state.status = true; // Set authenticated status
-        state.userData = action.payload.userData; // Store user data
+        state.status = true;
+        state.userData = action.payload.userData;
+      } else {
+        console.error("User data is required for login.");
       }
     },
     logout: (state) => {
-      state.status = false; // Set authenticated status to false
-      state.userData = null; // Clear user data
+      state.status = false;
+      state.userData = null;
+    },
+    clearAuthData: (state) => {
+      state.status = false;
+      state.userData = null;
     },
   },
 });
 
-export const { login, logout } = authSlice.actions;
+export const { login, logout, clearAuthData } = authSlice.actions;
 
 export default authSlice.reducer;
