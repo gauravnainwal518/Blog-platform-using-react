@@ -1,6 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App.jsx";
+
 import "./index.css";
 import { Provider } from "react-redux";
 import store from "./store/store.js";
@@ -11,10 +12,9 @@ import { AuthLayout, Login } from "./components/index.js";
 import AddPost from "./Pages/AddPost.jsx";
 import Signup from "./Pages/Signup.jsx";
 import EditPost from "./Pages/EditPost.jsx";
-
 import Post from "./Pages/Post.jsx";
-
 import AllPosts from "./pages/AllPosts";
+import AiSearch from "./Pages/aisearch.jsx";
 
 const router = createBrowserRouter([
   {
@@ -45,7 +45,6 @@ const router = createBrowserRouter([
         path: "/all-posts",
         element: (
           <AuthLayout authentication>
-            {" "}
             <AllPosts />
           </AuthLayout>
         ),
@@ -62,7 +61,6 @@ const router = createBrowserRouter([
         path: "/edit-post/:slug",
         element: (
           <AuthLayout authentication>
-            {" "}
             <EditPost />
           </AuthLayout>
         ),
@@ -70,6 +68,14 @@ const router = createBrowserRouter([
       {
         path: "/post/:slug",
         element: <Post />,
+      },
+      {
+        path: "/ai-search",
+        element: (
+          <AuthLayout authentication>
+            <AiSearch />
+          </AuthLayout>
+        ),
       },
     ],
   },

@@ -1,57 +1,62 @@
 import React, { useState, useEffect } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import "./App.css";
 import { login, logout } from "./store/authSlice";
-import { clearPosts, setPosts } from "./store/postSlice"; // Import Redux actions
+import { clearPosts, setPosts } from "./store/postSlice";
 import { Footer, Header } from "./components";
 import { Outlet } from "react-router-dom";
-import service from "./appwrite/config"; // Import the Service from config.js
+import service from "./appwrite/config";
 
 function App() {
   const [loading, setLoading] = useState(true);
   const dispatch = useDispatch();
 
+  // Access dark mode from Redux store
+  const isDarkMode = useSelector((state) => state.theme.isDarkMode);
+
+  // Log dark mode value when it changes
+  useEffect(() => {
+    console.log("Is dark mode enabled?", isDarkMode);
+  }, [isDarkMode]);
+
   const fetchPosts = async (userId) => {
     try {
       const userPosts = await service.getPostsByUser(userId);
-
-      // If posts are returned successfully (even empty), set them
       if (Array.isArray(userPosts)) {
         dispatch(setPosts(userPosts));
       } else {
-        // In case of any unexpected result, clear posts
         dispatch(clearPosts());
       }
     } catch (error) {
       console.error("Error fetching posts:", error);
-      dispatch(clearPosts()); // Make sure to clear old posts on error
+      dispatch(clearPosts());
     }
   };
 
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const userData = await service.account.get(); // Access the account correctly using `service.account`
+        const userData = await service.account.get();
         if (userData) {
           dispatch(login({ userData }));
-          fetchPosts(userData.$id); // Fetch posts if the user is logged in
+          fetchPosts(userData.$id);
         } else {
           dispatch(logout());
-          dispatch(clearPosts()); // Clear posts when no user is logged in
+          dispatch(clearPosts());
           console.log("Posts cleared!");
         }
       } catch (error) {
-        console.error("Error during user data fetch:", error); // Handle the error
+        console.error("Error during user data fetch:", error);
       } finally {
-        setLoading(false); // Set loading to false when done
+        setLoading(false);
       }
     };
 
-    fetchUserData(); // Call the function to fetch user data
+    fetchUserData();
   }, [dispatch]);
 
   return !loading ? (
-    <div className="app-container">
+    <div className={`app-container ${isDarkMode ? "dark" : "light"}`}>
       <Header />
       <main className="main-content">
         <Outlet />
@@ -59,7 +64,7 @@ function App() {
       <Footer />
     </div>
   ) : (
-    <div className="loading">Loading...</div> // Show a loading state while the user data is being fetched
+    <div className="loading">Loading...</div>
   );
 }
 

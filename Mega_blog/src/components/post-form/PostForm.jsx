@@ -20,23 +20,31 @@ function PostForm({ post }) {
   const dispatch = useDispatch();
   const userData = useSelector((state) => state.auth.userData);
 
+  // Access theme state from Redux store
+  const isDarkMode = useSelector((state) => state.theme.isDarkMode);
+
   const submit = async (data) => {
-    if (post) {
-      const updatedData = {
-        title: data.title,
-        slug: data.slug,
-        content: data.content,
-        status: data.status,
-      };
+    try {
+      if (post) {
+        const updatedData = {
+          title: data.title,
+          slug: data.slug,
+          content: data.content,
+          status: data.status,
+        };
 
-      if (data.image && data.image.length > 0) {
-        const file = await appwriteService.uploadFile(data.image[0]);
-        if (file) {
-          updatedData.featuredImageFile = data.image[0];
+        // Check if an image is uploaded, and update the post with the uploaded image or default image
+        if (data.image && data.image.length > 0) {
+          const file = await appwriteService.uploadFile(data.image[0]);
+          if (file) {
+            updatedData.featuredImageFile = file.$id; // Store the uploaded image ID
+          }
+        } else {
+          // If no image is uploaded, use the current post's image or a default one
+          updatedData.featuredImageFile =
+            post.featuredImage || "default_image_id"; // Use default image ID
         }
-      }
 
-      try {
         const response = await appwriteService.updatePost(
           post.$id,
           updatedData
@@ -48,24 +56,28 @@ function PostForm({ post }) {
             payload: response,
           });
         }
-      } catch (error) {
-        console.error("Error updating post:", error);
-      }
-    } else {
-      if (!data.image || data.image.length === 0) {
-        alert("Please upload a featured image.");
-        return;
-      }
+      } else {
+        // Validate and ensure an image is uploaded
+        if (!data.image || data.image.length === 0) {
+          alert("Please upload a featured image.");
+          return;
+        }
 
-      const file = await appwriteService.uploadFile(data.image[0]);
+        const file = await appwriteService.uploadFile(data.image[0]);
 
-      if (file) {
+        // Check if the file was uploaded successfully
+        if (!file) {
+          alert("Image upload failed. Please try again.");
+          return;
+        }
+
+        // Create a new post with the uploaded image ID or fallback to a default image ID
         const dbPost = await appwriteService.createPost({
           title: data.title,
           slug: data.slug,
           content: data.content,
           status: data.status,
-          featuredImageFile: data.image[0],
+          featuredImageFile: file.$id || "default_image_id", // Use uploaded file ID or default image ID
           userId: userData.$id,
         });
 
@@ -77,6 +89,9 @@ function PostForm({ post }) {
           });
         }
       }
+    } catch (error) {
+      console.error("Error submitting post:", error);
+      alert("An error occurred while processing your post. Please try again.");
     }
   };
 
@@ -106,13 +121,18 @@ function PostForm({ post }) {
   return (
     <form
       onSubmit={handleSubmit(submit)}
-      className="flex flex-wrap gap-4 bg-white rounded-xl p-6 shadow-lg"
+      className={`flex flex-wrap gap-4  p-6 shadow-lg transition-all duration-300 ease-in-out w-full min-h-screen ${
+        isDarkMode ? "bg-gray-800 text-white" : "bg-white text-gray-800"
+      }`}
     >
       <div className="w-full lg:w-2/3 space-y-4">
         <Input
           label="Title"
           placeholder="Enter post title"
           {...register("title", { required: true })}
+          className={`${
+            isDarkMode ? "bg-gray-700 text-gray-300" : "bg-white text-gray-800"
+          }`}
         />
         <Input
           label="Slug"
@@ -123,12 +143,18 @@ function PostForm({ post }) {
               shouldValidate: true,
             })
           }
+          className={`${
+            isDarkMode ? "bg-gray-700 text-gray-300" : "bg-white text-gray-800"
+          }`}
         />
         <RTE
           label="Content"
           name="content"
           control={control}
           defaultValue={getValues("content")}
+          className={`${
+            isDarkMode ? "bg-gray-700 text-gray-300" : "bg-white text-gray-800"
+          }`}
         />
       </div>
 
@@ -140,9 +166,12 @@ function PostForm({ post }) {
           {...register("image", {
             required: !post ? "Featured image is required" : false,
           })}
+          className={`${
+            isDarkMode ? "bg-gray-700 text-gray-300" : "bg-white text-gray-800"
+          }`}
         />
 
-        {post && (
+        {post && post.featuredImage && (
           <div className="rounded-lg overflow-hidden border border-gray-200">
             <img
               src={appwriteService.getFilePreview(post.featuredImage)}
@@ -156,12 +185,16 @@ function PostForm({ post }) {
           options={["active", "inactive"]}
           label="Status"
           {...register("status", { required: true })}
+          className={`${
+            isDarkMode ? "bg-gray-700 text-gray-300" : "bg-white text-gray-800"
+          }`}
         />
 
         <Button
           type="submit"
-          className="w-full py-3"
-          bgColor={post ? "bg-green-500" : undefined}
+          className={`w-full py-3 ${
+            isDarkMode ? "bg-green-600" : "bg-green-500"
+          }`}
         >
           {post ? "Update" : "Submit"}
         </Button>

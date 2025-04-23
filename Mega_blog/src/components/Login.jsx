@@ -7,12 +7,16 @@ import { useDispatch } from "react-redux";
 import authService from "../appwrite/auth";
 import appwriteService from "../appwrite/config";
 import { useForm } from "react-hook-form";
+import { useSelector } from "react-redux"; // Import useSelector to access the dark mode state
 
 function Login() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { register, handleSubmit } = useForm();
   const [error, setError] = useState("");
+
+  // Access the dark mode state
+  const isDarkMode = useSelector((state) => state.theme.isDarkMode);
 
   const login = async (data) => {
     setError("");
@@ -36,19 +40,37 @@ function Login() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-white">
-      <div className="w-full max-w-md bg-white rounded-xl p-10 shadow-2xl border border-gray-300 transform transition-all hover:scale-105 hover:shadow-3xl">
+    <div
+      className={`flex items-center justify-center min-h-screen px-4 ${
+        isDarkMode ? "bg-gray-900" : "bg-white"
+      }`}
+    >
+      <div
+        className={`w-full max-w-md rounded-xl p-10 shadow-2xl border transition-all hover:scale-105 hover:shadow-3xl ${
+          isDarkMode
+            ? "bg-gray-800 border-gray-700 text-white"
+            : "bg-white border-gray-300 text-gray-800"
+        }`}
+      >
         <div className="mb-6 flex justify-center">
           <img
-            src="/typenest.jpg" //
+            src="/typenest.jpg" // Removed logo import
             alt="Logo"
             className="w-28 h-auto"
           />
         </div>
-        <h2 className="text-center text-3xl font-extrabold text-gray-800 mb-4">
+        <h2
+          className={`text-center text-3xl font-extrabold mb-4 ${
+            isDarkMode ? "text-white" : "text-gray-800"
+          }`}
+        >
           Sign in to your account
         </h2>
-        <p className="mt-2 text-center text-gray-600">
+        <p
+          className={`mt-2 text-center ${
+            isDarkMode ? "text-gray-400" : "text-gray-600"
+          }`}
+        >
           Don&apos;t have an account?&nbsp;
           <Link
             to="/signup"
@@ -58,7 +80,11 @@ function Login() {
           </Link>
         </p>
         {error && (
-          <div className="bg-red-100 text-red-800 p-3 rounded-md mt-4 text-center">
+          <div
+            className={`${
+              isDarkMode ? "bg-red-100 text-red-800" : "bg-red-100 text-red-800"
+            } p-3 rounded-md mt-4 text-center`}
+          >
             {error}
           </div>
         )}
@@ -76,18 +102,31 @@ function Login() {
                     "Enter a valid email address",
                 },
               })}
-              className="p-4 rounded-lg border-2 border-gray-300 focus:outline-none focus:border-purple-500"
+              className={`p-4 rounded-lg border-2 focus:outline-none focus:border-purple-500 ${
+                isDarkMode
+                  ? "bg-gray-700 text-white placeholder-gray-400 focus:text-black focus:bg-white"
+                  : "bg-white text-gray-800 focus:border-purple-500"
+              }`}
             />
             <Input
               label="Password:"
               type="password"
               placeholder="Enter your password"
               {...register("password", { required: "Password is required" })}
-              className="p-4 rounded-lg border-2 border-gray-300 focus:outline-none focus:border-purple-500"
+              className={`p-4 rounded-lg border-2 focus:outline-none focus:border-purple-500 ${
+                isDarkMode
+                  ? "bg-gray-700 text-white placeholder-gray-400 focus:text-black focus:bg-white"
+                  : "bg-white text-gray-800 focus:border-purple-500"
+              }`}
             />
+
             <Button
               type="submit"
-              className="w-full bg-purple-600 hover:bg-purple-700 text-white text-lg font-semibold py-3 px-6 rounded-lg transition duration-300"
+              className={`w-full bg-purple-600 hover:bg-purple-700 text-white text-lg font-semibold py-3 px-6 rounded-lg transition duration-300 ${
+                isDarkMode
+                  ? "bg-purple-600 text-white"
+                  : "bg-purple-600 text-white"
+              }`}
             >
               Sign in
             </Button>

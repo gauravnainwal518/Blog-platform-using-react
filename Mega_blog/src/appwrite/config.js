@@ -29,67 +29,65 @@ export class Service {
         }
     }
 
-    // Upload File
     async uploadFile(file) {
         try {
-            console.log("Starting file upload...");
+            console.log("Starting file upload...", file);
+    
+            if (!file || typeof file !== "object" || !file.size) {
+                throw new Error("Invalid file object passed to uploadFile.");
+            }
+    
             const response = await this.bucket.createFile(
                 conf.appwriteBucketId,
                 ID.unique(),
                 file
             );
-            if (!response || !response.$id) {
-                throw new Error("No file ID returned after upload.");
-            }
+    
+            console.log("File uploaded successfully:", response);
             return response;
+    
         } catch (error) {
-            console.error("File upload error:", error);
+            console.error("File upload error:");
+            console.dir(error); // ⬅️ This will show the full error object
             throw error;
         }
     }
-// Create Post
-// config.js
-async createPost({ title, slug, content, featuredImageFile, status, userId }) {
-    if (!title || !slug || !content || !status || !userId) {
-        throw new Error("All fields are required to create a post.");
-    }
+    
 
-    if (!featuredImageFile) {
-        throw new Error("Featured image is required.");
-    }
-
-    try {
-        const fileResponse = await this.uploadFile(featuredImageFile);
-        if (!fileResponse || !fileResponse.$id) {
-            throw new Error("File upload failed, no file ID returned.");
+    async createPost({ title, slug, content, featuredImageFile, status, userId }) {
+        if (!title || !slug || !content || !status || !userId) {
+            throw new Error("All fields are required to create a post.");
         }
-
-        const featuredImage = fileResponse.$id;
-
-        const postData = {
-            title,
-            slug,
-            content,
-            featuredImage,
-            status,
-            userId,
-        };
-
-        // Create the post in Appwrite
-        const createdPost = await this.databases.createDocument(
-            conf.appwriteDatabaseId,
-            conf.appwriteCollectionId,
-            ID.unique(),
-            postData
-        );
-
-        return createdPost;
-
-    } catch (error) {
-        console.error("Appwrite service :: createPost :: error", error);
-        throw error;
+    
+        if (!featuredImageFile) {
+            throw new Error("Featured image is required.");
+        }
+    
+        try {
+            const postData = {
+                title,
+                slug,
+                content,
+                featuredImage: featuredImageFile, // It's already an ID
+                status,
+                userId,
+            };
+    
+            const createdPost = await this.databases.createDocument(
+                conf.appwriteDatabaseId,
+                conf.appwriteCollectionId,
+                ID.unique(),
+                postData
+            );
+    
+            return createdPost;
+    
+        } catch (error) {
+            console.error("Appwrite service :: createPost :: error", error);
+            throw error;
+        }
     }
-}
+    
 
     // Fetch posts by user
     async fetchUserPosts(userId) {

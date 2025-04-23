@@ -7,16 +7,24 @@
   --header-bg: #ffffff; /* White header */
   --card-bg: #ffffff; /* White card background */
   --card-shadow: rgba(0, 0, 0, 0.1); /* Soft shadow */
+
+  /* Dark Mode Variables */
+  --dark-background-color: #121212; /* Dark background */
+  --dark-text-color: #ffffff; /* Light text for dark mode */
+  --dark-footer-bg: #333333; /* Dark footer */
+  --dark-header-bg: #333333; /* Dark header */
+  --dark-card-bg: #444444; /* Dark card background */
+  --dark-card-shadow: rgba(255, 255, 255, 0.1); /* Soft shadow for dark mode */
 }
 
 #root {
   width: 100%;
-  text-align: center;
   display: flex;
   flex-direction: column;
   min-height: 100vh;
 }
 
+/* Global Body Styles */
 body {
   background: linear-gradient(to bottom, var(--background-color), #e4e7f2);
   color: var(--text-color);
@@ -27,6 +35,34 @@ body {
   flex-direction: column;
   min-height: 100vh;
   overflow-y: scroll; /* Keep vertical scrolling */
+}
+
+/* Dark Mode */
+body.dark-mode {
+  background: linear-gradient(to bottom, var(--dark-background-color), #1c1c1c);
+  color: var(--dark-text-color);
+}
+
+body.dark-mode header {
+  background-color: var(--dark-header-bg);
+}
+
+body.dark-mode footer {
+  background-color: var(--dark-footer-bg);
+}
+
+body.dark-mode .card {
+  background-color: var(--dark-card-bg);
+  box-shadow: 0 2px 10px var(--dark-card-shadow);
+}
+
+body.dark-mode button {
+  background-color: var(--primary-color);
+  color: var(--dark-text-color);
+}
+
+body.dark-mode button:hover {
+  background-color: var(--secondary-color);
 }
 
 /* Hide vertical scrollbar */
@@ -49,6 +85,7 @@ body::-webkit-scrollbar:horizontal {
   flex: 1;
 }
 
+/* Header & Footer */
 header {
   background-color: var(--header-bg);
   color: var(--primary-color);
@@ -131,4 +168,19 @@ button:focus {
   header, footer {
     padding: 10px;
   }
+}
+
+/* Theme Toggle Button */
+.theme-toggle-btn {
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.theme-toggle-btn:hover {
+  background-color: var(--secondary-color);
 }
