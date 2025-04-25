@@ -8,20 +8,15 @@ import parse from "html-react-parser";
 const AllPosts = () => {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState("all"); // State for filtering posts
   const userData = useSelector((state) => state.auth.userData);
   const isDarkMode = useSelector((state) => state.theme.isDarkMode);
 
   useEffect(() => {
     const fetchPosts = async () => {
       try {
-        if (userData?.$id) {
-          const fetchedPosts = await appwriteService.getPostsByUser(
-            userData.$id
-          );
-          setPosts(Array.isArray(fetchedPosts) ? fetchedPosts : []);
-        } else {
-          setPosts([]);
-        }
+        const fetchedPosts = await appwriteService.getPosts();
+        setPosts(Array.isArray(fetchedPosts) ? fetchedPosts : []);
       } catch (error) {
         console.error("Error fetching posts:", error);
         setPosts([]);
@@ -31,11 +26,17 @@ const AllPosts = () => {
     };
 
     fetchPosts();
-  }, [userData]);
+  }, []);
+
+  // Filter posts based on the selected filter option
+  const filteredPosts =
+    filter === "mine"
+      ? posts.filter((post) => post.userId === userData?.$id)
+      : posts;
 
   return (
     <div
-      className={`w-full min-h-screen py-10  ${
+      className={`w-full min-h-screen py-10 ${
         isDarkMode ? "bg-gray-800 text-white" : "bg-white text-gray-800"
       }`}
     >
@@ -44,8 +45,28 @@ const AllPosts = () => {
           isDarkMode ? "text-white" : "text-gray-800"
         }`}
       >
-        Your Posts
+        {filter === "mine" ? "Your Posts" : "All Posts"}
       </h1>
+
+      {/* Filter Dropdown or Button */}
+      <div className="text-center mb-8">
+        <button
+          onClick={() => setFilter("all")}
+          className={`px-4 py-2 mx-2 rounded-lg ${
+            filter === "all" ? "bg-blue-600 text-white" : "bg-gray-200"
+          }`}
+        >
+          All Posts
+        </button>
+        <button
+          onClick={() => setFilter("mine")}
+          className={`px-4 py-2 mx-2 rounded-lg ${
+            filter === "mine" ? "bg-blue-600 text-white" : "bg-gray-200"
+          }`}
+        >
+          My Posts
+        </button>
+      </div>
 
       {loading ? (
         <div
@@ -55,17 +76,17 @@ const AllPosts = () => {
         >
           Loading posts...
         </div>
-      ) : posts.length === 0 ? (
+      ) : filteredPosts.length === 0 ? (
         <div
           className={`text-center ${
             isDarkMode ? "text-gray-400" : "text-gray-500"
           } text-xl`}
         >
-          You haven't written any posts yet.
+          No posts found.
         </div>
       ) : (
         <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 px-4 sm:px-6 lg:px-8">
-          {posts.map((post) => (
+          {filteredPosts.map((post) => (
             <div
               key={post.$id}
               className={`${

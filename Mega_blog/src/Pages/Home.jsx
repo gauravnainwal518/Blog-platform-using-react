@@ -97,7 +97,7 @@ function Home() {
 
       {/* ✅ 4. Posts Section */}
       <section className="py-12 px-4">
-        {userData && (
+        {userData && posts.length > 0 && (
           <h2 className="text-3xl font-bold mb-8 text-center">
             📰 Recent Posts
           </h2>
