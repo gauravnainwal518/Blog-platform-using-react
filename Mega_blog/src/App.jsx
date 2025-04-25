@@ -16,7 +16,7 @@ function App() {
 
   // Log dark mode value when it changes
   useEffect(() => {
-    console.log("Is dark mode enabled?", isDarkMode);
+    // console.log("Is dark mode enabled?", isDarkMode);
   }, [isDarkMode]);
 
   const fetchPosts = async (userId) => {

@@ -4,8 +4,9 @@ import { Link } from "react-router-dom";
 import { PostCard } from "../components";
 
 function Home() {
-  const isDarkMode = useSelector((state) => state.theme.isDarkMode); // Dark mode from Redux state
+  const isDarkMode = useSelector((state) => state.theme.isDarkMode);
   const posts = useSelector((state) => state.posts.allPosts);
+  const userData = useSelector((state) => state.auth?.userData);
   const [isHovered, setIsHovered] = useState(true);
 
   const handleMouseEnter = () => setIsHovered(false);
@@ -16,7 +17,7 @@ function Home() {
     <div
       className={`w-full min-h-screen ${
         isDarkMode ? "bg-gray-900 text-white" : "bg-white text-gray-800"
-      }`} // Background and text color toggle
+      }`}
     >
       {/* ✅ 1. Welcome Section */}
       <section className="w-full py-16 text-center px-4">
@@ -96,9 +97,22 @@ function Home() {
 
       {/* ✅ 4. Posts Section */}
       <section className="py-12 px-4">
-        <h2 className="text-3xl font-bold mb-8 text-center">📰 Recent Posts</h2>
+        {userData && (
+          <h2 className="text-3xl font-bold mb-8 text-center">
+            📰 Recent Posts
+          </h2>
+        )}
 
-        {posts.length === 0 ? (
+        {!userData ? (
+          <div className="text-center text-lg font-semibold text-red-500">
+            <Link
+              to="/login"
+              className="hover:underline hover:text-red-400 transition"
+            >
+              Please login to see your posts
+            </Link>
+          </div>
+        ) : posts.length === 0 ? (
           <div className="text-center">
             <Link
               to="/add-post"

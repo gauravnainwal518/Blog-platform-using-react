@@ -19,7 +19,7 @@ export class Service {
         this.bucket = new Storage(this.client);  // Initialize Storage (for files)
     }
 
-    // ✅ New Method: Fetch User Data (Get User Account)
+    //  New Method: Fetch User Data (Get User Account)
     async getUserData() {
         try {
             return await this.account.get();  // Fetch user data from Appwrite
@@ -32,37 +32,37 @@ export class Service {
     async uploadFile(file) {
         try {
             console.log("Starting file upload...", file);
-    
+
             if (!file || typeof file !== "object" || !file.size) {
                 throw new Error("Invalid file object passed to uploadFile.");
             }
-    
+
             const response = await this.bucket.createFile(
                 conf.appwriteBucketId,
                 ID.unique(),
                 file
             );
-    
+
             console.log("File uploaded successfully:", response);
             return response;
-    
+
         } catch (error) {
             console.error("File upload error:");
-            console.dir(error); // ⬅️ This will show the full error object
+            console.dir(error); //  This will show the full error object
             throw error;
         }
     }
-    
+
 
     async createPost({ title, slug, content, featuredImageFile, status, userId }) {
         if (!title || !slug || !content || !status || !userId) {
             throw new Error("All fields are required to create a post.");
         }
-    
+
         if (!featuredImageFile) {
             throw new Error("Featured image is required.");
         }
-    
+
         try {
             const postData = {
                 title,
@@ -72,22 +72,22 @@ export class Service {
                 status,
                 userId,
             };
-    
+
             const createdPost = await this.databases.createDocument(
                 conf.appwriteDatabaseId,
                 conf.appwriteCollectionId,
                 ID.unique(),
                 postData
             );
-    
+
             return createdPost;
-    
+
         } catch (error) {
             console.error("Appwrite service :: createPost :: error", error);
             throw error;
         }
     }
-    
+
 
     // Fetch posts by user
     async fetchUserPosts(userId) {
@@ -136,7 +136,7 @@ export class Service {
 
     // Get single post by slug
     async getPost(slug) {
-        
+
         try {
             const response = await this.databases.listDocuments(
                 conf.appwriteDatabaseId,
@@ -195,27 +195,19 @@ export class Service {
         }
     }
 
+    //  Updated to use getFileView (Free) instead of getFilePreview (Paid)
     getFilePreview(fileId) {
         try {
-            const response = this.bucket.getFilePreview(conf.appwriteBucketId, fileId);
-            console.log("File preview response:", response);
-    
-            if (response && response.href) {
-                console.log("Preview URL:", response.href);
-                return response.href;
-            } else {
-                console.error("No preview available for file:", fileId);
-                return "/default_img.jpg";  // ✅ Correct fallback image path
-            }
+            const url = this.bucket.getFileView(conf.appwriteBucketId, fileId);
+            return url;
         } catch (error) {
-            console.error("Error getting file preview:", error);
-            return "/default_img.jpg";  // ✅ Correct fallback image path
+            console.error("Error getting file view URL:", error);
+            return "/default_img.jpg";  // Fallback
         }
     }
-    
-    
 
-    // ✅ New Method: Get Posts by User (wrapper)
+
+    //  New Method: Get Posts by User (wrapper)
     getPostsByUser(userId) {
         return this.fetchUserPosts(userId);
     }

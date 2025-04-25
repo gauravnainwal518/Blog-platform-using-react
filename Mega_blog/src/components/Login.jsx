@@ -104,8 +104,8 @@ function Login() {
               })}
               className={`p-4 rounded-lg border-2 focus:outline-none focus:border-purple-500 ${
                 isDarkMode
-                  ? "bg-gray-700 text-white placeholder-gray-400 focus:text-black focus:bg-white"
-                  : "bg-white text-gray-800 focus:border-purple-500"
+                  ? "bg-gray-700 text-white placeholder-gray-400"
+                  : "bg-white text-gray-800"
               }`}
             />
             <Input
@@ -115,8 +115,8 @@ function Login() {
               {...register("password", { required: "Password is required" })}
               className={`p-4 rounded-lg border-2 focus:outline-none focus:border-purple-500 ${
                 isDarkMode
-                  ? "bg-gray-700 text-white placeholder-gray-400 focus:text-black focus:bg-white"
-                  : "bg-white text-gray-800 focus:border-purple-500"
+                  ? "bg-gray-700 text-white placeholder-gray-400"
+                  : "bg-white text-gray-800"
               }`}
             />
 

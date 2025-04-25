@@ -79,7 +79,11 @@ function Signup() {
             label="Full Name"
             placeholder="Enter your full name"
             {...register("name", { required: "Full name is required" })}
-            className={isDarkMode ? "bg-gray-700 text-white" : ""}
+            className={`rounded-md border px-4 py-2 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-purple-500 ${
+              isDarkMode
+                ? "bg-gray-700 text-white placeholder-gray-400 border-gray-600"
+                : "bg-white text-gray-900 placeholder-gray-500 border-gray-300"
+            }`}
           />
           <Input
             label="Email"
@@ -93,7 +97,11 @@ function Signup() {
                   "Enter a valid email address",
               },
             })}
-            className={isDarkMode ? "bg-gray-700 text-white" : ""}
+            className={`rounded-md border px-4 py-2 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-purple-500 ${
+              isDarkMode
+                ? "bg-gray-700 text-white placeholder-gray-400 border-gray-600"
+                : "bg-white text-gray-900 placeholder-gray-500 border-gray-300"
+            }`}
           />
           <Input
             label="Password"
@@ -106,7 +114,11 @@ function Signup() {
                 message: "Password must be at least 6 characters",
               },
             })}
-            className={isDarkMode ? "bg-gray-700 text-white" : ""}
+            className={`rounded-md border px-4 py-2 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-purple-500 ${
+              isDarkMode
+                ? "bg-gray-700 text-white placeholder-gray-400 border-gray-600"
+                : "bg-white text-gray-900 placeholder-gray-500 border-gray-300"
+            }`}
           />
           <Button
             type="submit"
