@@ -72,6 +72,7 @@ export class Service {
                 userId,
                 createdAt: now,
                 updatedAt: now,
+                likedBy: [] // Initialize likedBy as an empty array to track users who liked the post
             };
     
             console.log("Creating post with data:", postData);
@@ -92,6 +93,8 @@ export class Service {
             throw error;
         }
     }
+    
+    
     
     async fetchUserPosts(userId) {
         try {
@@ -317,7 +320,48 @@ export class Service {
           throw error;
         }
       }
-      
+
+      async likePost(postId, userId) {
+        try {
+            // Fetch the current post data
+            const post = await this.databases.getDocument(
+                conf.appwriteDatabaseId,
+                conf.appwriteCollectionId,
+                postId
+            );
+    
+            if (post) {
+                // Parse the likedBy array from the post data
+                let likedByArray = post.likedBy || [];
+    
+                // Check if the user has already liked the post
+                const userIndex = likedByArray.indexOf(userId);
+    
+                if (userIndex === -1) {
+                    // User has not liked the post, add their userId to the likedBy array
+                    likedByArray.push(userId);
+                } else {
+                    // User has already liked the post, remove their userId to unlike
+                    likedByArray.splice(userIndex, 1);
+                }
+    
+                // Update the post document with the new likedBy array
+                const updatedPost = await this.databases.updateDocument(
+                    conf.appwriteDatabaseId,
+                    conf.appwriteCollectionId,
+                    postId,
+                    { likedBy: likedByArray }
+                );
+    
+                // Return the updated post data with the new like count
+                return updatedPost;
+            }
+        } catch (error) {
+            console.error('Error liking/unliking post:', error);
+            throw new Error('Unable to toggle like on the post.');
+        }
+    }
+    
 }    
 
 const service = new Service();

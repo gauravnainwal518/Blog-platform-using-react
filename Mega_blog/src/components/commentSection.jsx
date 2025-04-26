@@ -9,7 +9,7 @@ const CommentSection = ({ postId }) => {
   const [editingCommentId, setEditingCommentId] = useState(null); // For tracking which comment is being edited
   const [editedCommentText, setEditedCommentText] = useState(""); // For storing edited comment text
 
-  const theme = useSelector((state) => state.theme.mode); // Get theme from Redux
+  const isDarkMode = useSelector((state) => state.theme.isDarkMode); // Get theme from Redux
 
   // Fetch comments for the given postId
   const fetchComments = async () => {
@@ -104,7 +104,7 @@ const CommentSection = ({ postId }) => {
     }
   };
 
-  // Start editing a comment (✅ newly added missing function)
+  // Start editing a comment
   const handleEditComment = (commentId, content) => {
     if (typeof content !== "string") {
       content = String(content); // Ensure it's a string
@@ -123,7 +123,7 @@ const CommentSection = ({ postId }) => {
   return (
     <div
       className={`p-4 ${
-        theme === "dark" ? "bg-gray-900 text-white" : "bg-white text-black"
+        isDarkMode ? "bg-gray-900 text-white" : "bg-white text-black"
       } rounded`}
     >
       <h3 className="text-lg font-bold mb-4">Comments</h3>
@@ -133,7 +133,7 @@ const CommentSection = ({ postId }) => {
           <div
             key={comment.$id}
             className={`p-2 rounded ${
-              theme === "dark" ? "bg-gray-800" : "bg-gray-100"
+              isDarkMode ? "bg-gray-800" : "bg-gray-100"
             }`}
           >
             {editingCommentId === comment.$id ? (
@@ -143,7 +143,7 @@ const CommentSection = ({ postId }) => {
                   value={editedCommentText}
                   onChange={(e) => setEditedCommentText(e.target.value)}
                   className={`border p-2 mb-2 rounded w-full ${
-                    theme === "dark"
+                    isDarkMode
                       ? "bg-gray-700 text-white border-gray-600"
                       : "bg-white text-black border-gray-300"
                   }`}
@@ -200,7 +200,7 @@ const CommentSection = ({ postId }) => {
         <input
           type="text"
           className={`border p-2 flex-1 rounded ${
-            theme === "dark"
+            isDarkMode
               ? "bg-gray-800 text-white border-gray-600"
               : "bg-white text-black border-gray-300"
           }`}

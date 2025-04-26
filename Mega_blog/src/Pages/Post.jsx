@@ -9,6 +9,8 @@ import CommentSection from "../components/commentSection";
 export default function Post() {
   const [post, setPost] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [likes, setLikes] = useState(0); // State to hold like count
+  const [userHasLiked, setUserHasLiked] = useState(false); // Track if user already liked the post
   const { slug } = useParams();
   const navigate = useNavigate();
 
@@ -39,6 +41,18 @@ export default function Post() {
     }
   };
 
+  const handleLike = () => {
+    // Toggle like/unlike based on the current like status
+    appwriteService
+      .likePost(post.$id, userData.$id)
+      .then((updatedPost) => {
+        // Update like count and user like status
+        setLikes(updatedPost.likedBy.length); // Update like count based on likedBy array length
+        setUserHasLiked(updatedPost.likedBy.includes(userData.$id)); // Update like status
+      })
+      .catch((error) => console.error("Error liking/unliking post:", error));
+  };
+
   useEffect(() => {
     if (slug) {
       appwriteService
@@ -46,6 +60,8 @@ export default function Post() {
         .then((fetchedPost) => {
           if (fetchedPost) {
             setPost(fetchedPost);
+            setLikes(fetchedPost.likedBy.length || 0); // Set initial like count based on likedBy array length
+            setUserHasLiked(fetchedPost.likedBy.includes(userData.$id)); // Check if the current user has liked the post
           } else {
             navigate("/");
           }
@@ -55,7 +71,7 @@ export default function Post() {
     } else {
       navigate("/");
     }
-  }, [slug, navigate]);
+  }, [slug, navigate, userData]);
 
   if (isLoading)
     return (
@@ -141,6 +157,20 @@ export default function Post() {
           ) : (
             <p>No Content Available</p>
           )}
+        </div>
+
+        {/* Like Button */}
+        <div className="flex items-center gap-4 mt-6">
+          <button
+            onClick={handleLike}
+            className={`bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors duration-300 ${
+              userHasLiked ? "bg-red-600" : ""
+            }`}
+          >
+            {userHasLiked ? "Unlike" : "Like"}{" "}
+            {/* Toggle between Like and Unlike */}
+          </button>
+          <span>{likes} Likes</span>
         </div>
 
         {/* Comment Section */}
