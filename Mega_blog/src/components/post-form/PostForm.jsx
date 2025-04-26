@@ -1,4 +1,6 @@
 import React, { useCallback, useEffect } from "react";
+import dayjs from "dayjs";
+
 import { useForm } from "react-hook-form";
 import { Input, Select, RTE, Button } from "../../components/index";
 import appwriteService from "../../appwrite/config";
@@ -25,24 +27,25 @@ function PostForm({ post }) {
 
   const submit = async (data) => {
     try {
+      const now = dayjs().toISOString(); // Current ISO timestamp
+
       if (post) {
         const updatedData = {
           title: data.title,
           slug: data.slug,
           content: data.content,
           status: data.status,
+          updatedAt: now, // timestamp on update
         };
 
-        // Check if an image is uploaded, and update the post with the uploaded image or default image
         if (data.image && data.image.length > 0) {
           const file = await appwriteService.uploadFile(data.image[0]);
           if (file) {
-            updatedData.featuredImageFile = file.$id; // Store the uploaded image ID
+            updatedData.featuredImageFile = file.$id;
           }
         } else {
-          // If no image is uploaded, use the current post's image or a default one
           updatedData.featuredImageFile =
-            post.featuredImage || "default_image_id"; // Use default image ID
+            post.featuredImage || "default_image_id";
         }
 
         const response = await appwriteService.updatePost(
@@ -57,28 +60,26 @@ function PostForm({ post }) {
           });
         }
       } else {
-        // Validate and ensure an image is uploaded
         if (!data.image || data.image.length === 0) {
           alert("Please upload a featured image.");
           return;
         }
 
         const file = await appwriteService.uploadFile(data.image[0]);
-
-        // Check if the file was uploaded successfully
         if (!file) {
           alert("Image upload failed. Please try again.");
           return;
         }
 
-        // Create a new post with the uploaded image ID or fallback to a default image ID
         const dbPost = await appwriteService.createPost({
           title: data.title,
           slug: data.slug,
           content: data.content,
           status: data.status,
-          featuredImageFile: file.$id || "default_image_id", // Use uploaded file ID or default image ID
+          featuredImageFile: file.$id || "default_image_id",
           userId: userData.$id,
+          createdAt: now,
+          updatedAt: now,
         });
 
         if (dbPost) {

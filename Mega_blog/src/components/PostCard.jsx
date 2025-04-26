@@ -3,7 +3,8 @@ import appwriteService from "../appwrite/config";
 import { Link } from "react-router-dom";
 import { useSelector } from "react-redux"; // Access Redux store state
 
-function PostCard({ $id, title, featuredImage }) {
+function PostCard({ $id, title, featuredImage, createdAt }) {
+  // Added createdAt prop
   const [imageUrl, setImageUrl] = useState("default-image.jpg");
 
   // Access theme state from Redux store
@@ -16,6 +17,10 @@ function PostCard({ $id, title, featuredImage }) {
       setImageUrl(url); // Update the image URL with the preview
     }
   }, [featuredImage]);
+
+  // Format date and time
+  const formattedDate = new Date(createdAt).toLocaleDateString();
+  const formattedTime = new Date(createdAt).toLocaleTimeString();
 
   return (
     <Link to={`/post/${$id}`}>
@@ -40,6 +45,10 @@ function PostCard({ $id, title, featuredImage }) {
         >
           {title}
         </h2>
+        <p className="text-sm text-gray-400 mt-2">
+          {/* Format and display createdAt */}
+          Published on: {formattedDate} at {formattedTime}
+        </p>
       </div>
     </Link>
   );

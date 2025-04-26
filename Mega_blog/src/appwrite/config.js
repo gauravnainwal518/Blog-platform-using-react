@@ -4,25 +4,23 @@ import { addPost } from '../store/postSlice.js';
 
 export class Service {
     client = new Client();
-    account;  // Ensure account is initialized here
+    account;
     databases;
     bucket;
 
     constructor() {
-        // Initialize the client and set configuration
         this.client
-            .setEndpoint(conf.appwriteUrl)  // Set your Appwrite API endpoint
-            .setProject(conf.appwriteProjectId);  // Set your Appwrite Project ID
+            .setEndpoint(conf.appwriteUrl)
+            .setProject(conf.appwriteProjectId);
 
-        this.account = new Account(this.client);  // Initialize the Account object
-        this.databases = new Databases(this.client);  // Initialize Databases
-        this.bucket = new Storage(this.client);  // Initialize Storage (for files)
+        this.account = new Account(this.client);
+        this.databases = new Databases(this.client);
+        this.bucket = new Storage(this.client);
     }
 
-    //  New Method: Fetch User Data (Get User Account)
     async getUserData() {
         try {
-            return await this.account.get();  // Fetch user data from Appwrite
+            return await this.account.get();
         } catch (error) {
             console.error("Appwrite service :: getUserData :: error", error);
             throw error;
@@ -31,7 +29,7 @@ export class Service {
 
     async uploadFile(file) {
         try {
-            console.log("Starting file upload...", file);
+            //console.log("Starting file upload...", file);
 
             if (!file || typeof file !== "object" || !file.size) {
                 throw new Error("Invalid file object passed to uploadFile.");
@@ -43,53 +41,58 @@ export class Service {
                 file
             );
 
-            console.log("File uploaded successfully:", response);
+            //console.log("File uploaded successfully:", response);
             return response;
 
         } catch (error) {
             console.error("File upload error:");
-            console.dir(error); //  This will show the full error object
+            console.dir(error);
             throw error;
         }
     }
-
 
     async createPost({ title, slug, content, featuredImageFile, status, userId }) {
         if (!title || !slug || !content || !status || !userId) {
             throw new Error("All fields are required to create a post.");
         }
-
+    
         if (!featuredImageFile) {
             throw new Error("Featured image is required.");
         }
-
+    
         try {
+            const now = new Date().toISOString(); // ISO format for createdAt
+    
             const postData = {
                 title,
                 slug,
                 content,
-                featuredImage: featuredImageFile, // It's already an ID
+                featuredImage: featuredImageFile,
                 status,
                 userId,
+                createdAt: now,
+                updatedAt: now,
             };
-
+    
+            console.log("Creating post with data:", postData);
+    
             const createdPost = await this.databases.createDocument(
                 conf.appwriteDatabaseId,
                 conf.appwriteCollectionId,
                 ID.unique(),
                 postData
             );
-
+    
+            console.log("Created post response:", createdPost);
+    
             return createdPost;
-
+    
         } catch (error) {
             console.error("Appwrite service :: createPost :: error", error);
             throw error;
         }
     }
-
-
-    // Fetch posts by user
+    
     async fetchUserPosts(userId) {
         try {
             const response = await this.databases.listDocuments(
@@ -106,7 +109,6 @@ export class Service {
         }
     }
 
-    // Get all posts
     async getAllPosts() {
         try {
             const response = await this.databases.listDocuments(
@@ -120,13 +122,14 @@ export class Service {
         }
     }
 
-    // Get posts (alias for getAllPosts)
     async getPosts() {
         try {
             const response = await this.databases.listDocuments(
                 conf.appwriteDatabaseId,
                 conf.appwriteCollectionId
             );
+            // Print the documents to see their structure
+        console.log("Fetched Posts:", response.documents);
             return response.documents;
         } catch (error) {
             console.error("Appwrite service :: getPosts :: error", error);
@@ -134,9 +137,7 @@ export class Service {
         }
     }
 
-    // Get single post by slug
     async getPost(slug) {
-
         try {
             const response = await this.databases.listDocuments(
                 conf.appwriteDatabaseId,
@@ -152,14 +153,19 @@ export class Service {
         }
     }
 
-    // Update post
     async updatePost(postId, updatedData) {
         try {
+            const now = new Date().toISOString(); // Update timestamp
+            const updatedPost = {
+                ...updatedData,
+                updatedAt: now,
+            };
+
             const response = await this.databases.updateDocument(
                 conf.appwriteDatabaseId,
                 conf.appwriteCollectionId,
                 postId,
-                updatedData
+                updatedPost
             );
             return response;
         } catch (error) {
@@ -168,7 +174,6 @@ export class Service {
         }
     }
 
-    // Delete post
     async deletePost(postId) {
         try {
             await this.databases.deleteDocument(
@@ -195,19 +200,16 @@ export class Service {
         }
     }
 
-    //  Updated to use getFileView (Free) instead of getFilePreview (Paid)
     getFilePreview(fileId) {
         try {
             const url = this.bucket.getFileView(conf.appwriteBucketId, fileId);
             return url;
         } catch (error) {
             console.error("Error getting file view URL:", error);
-            return "/default_img.jpg";  // Fallback
+            return "/default_img.jpg";
         }
     }
 
-
-    //  New Method: Get Posts by User (wrapper)
     getPostsByUser(userId) {
         return this.fetchUserPosts(userId);
     }
