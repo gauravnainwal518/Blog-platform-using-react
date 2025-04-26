@@ -4,6 +4,7 @@ import appwriteService from "../appwrite/config";
 import { Button } from "../components";
 import parse from "html-react-parser";
 import { useSelector } from "react-redux";
+import CommentSection from "../components/commentSection";
 
 export default function Post() {
   const [post, setPost] = useState(null);
@@ -140,6 +141,11 @@ export default function Post() {
           ) : (
             <p>No Content Available</p>
           )}
+        </div>
+
+        {/* Comment Section */}
+        <div className="mt-8">
+          <CommentSection postId={post.$id} />
         </div>
       </div>
     </div>

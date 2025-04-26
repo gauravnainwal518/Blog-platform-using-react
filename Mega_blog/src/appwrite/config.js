@@ -213,7 +213,112 @@ export class Service {
     getPostsByUser(userId) {
         return this.fetchUserPosts(userId);
     }
-}
+
+
+    async createComment({ content, articleId, userId }) {
+        if (!content || !articleId || !userId) {
+            throw new Error("All fields are required to create a comment.");
+        }
+    
+        try {
+            const now = new Date().toISOString();
+    
+            const commentData = {
+                content,
+                articleId,
+                userId,
+                createdAt: now,
+            };
+    
+            const response = await this.databases.createDocument(
+                conf.appwriteDatabaseId,
+                conf.appwriteCommentsCollectionId,
+                ID.unique(),
+                commentData
+            );
+    
+            console.log("Created comment:", response);
+            return response;
+        } catch (error) {
+            console.error("Appwrite service :: createComment :: error", error);
+            throw error;
+        }
+    }
+    
+    async fetchCommentsByArticleId(articleId) {
+        if (!articleId) {
+            throw new Error("Article ID is required to fetch comments.");
+        }
+    
+        try {
+            const response = await this.databases.listDocuments(
+                conf.appwriteDatabaseId,
+                conf.appwriteCommentsCollectionId,
+                [
+                    Query.equal('articleId', articleId)
+                ]
+            );
+    
+            console.log("Fetched comments:", response.documents);
+            return response.documents;
+        } catch (error) {
+            console.error("Appwrite service :: fetchCommentsByArticleId :: error", error);
+            throw error;
+        }
+    }
+
+    async deleteComment(commentId) {
+        try {
+            await this.databases.deleteDocument(
+                conf.appwriteDatabaseId,
+                conf.appwriteCommentsCollectionId,
+                commentId
+            );
+            console.log("Comment deleted successfully:", commentId);
+            return true;
+        } catch (error) {
+            console.error("Error deleting comment:", error);
+            throw error;
+        }
+    }
+    
+    async updateComment(commentId, updatedContent) {
+        // Ensure updatedContent is a string before passing it to the database
+        const contentString = typeof updatedContent === 'string'
+          ? updatedContent.trim() 
+          : String(updatedContent).trim(); // Convert to string explicitly if it's not a string
+      
+        console.log("Updating comment content (Appwrite):", contentString); // Log content
+      
+        if (!contentString) {
+          alert("Content cannot be empty!");
+          throw new Error("Content is required to update a comment.");
+        }
+      
+        if (contentString.length > 255) {
+          alert("Content must be less than 255 characters!");
+          throw new Error("Content too long.");
+        }
+      
+        try {
+          const updatedComment = { content: contentString };
+      
+          const response = await this.databases.updateDocument(
+            conf.appwriteDatabaseId,
+            conf.appwriteCommentsCollectionId,
+            commentId,
+            updatedComment
+          );
+      
+          console.log("Updated comment:", response);
+          return response;
+        } catch (error) {
+          console.error("Error updating comment:", error);
+          throw error;
+        }
+      }
+      
+}    
 
 const service = new Service();
 export default service;
