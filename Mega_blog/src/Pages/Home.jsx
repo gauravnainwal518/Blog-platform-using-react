@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import { PostCard } from "../components";
+import dayjs from "dayjs";
 
 function Home() {
   const isDarkMode = useSelector((state) => state.theme.isDarkMode);
@@ -140,7 +141,14 @@ function Home() {
                     status={post.status}
                     userId={post.userId}
                     slug={post.$id}
+                    createdAt={post.createdAt}
                   />
+                  <div className="mt-2 text-sm text-center">
+                    {/* Fix the date formatting issue here */}
+                    {post.createdAt
+                      ? dayjs(post.createdAt).format("MMM D, YYYY")
+                      : "Unknown Date"}
+                  </div>
                 </div>
               ))}
             </div>
