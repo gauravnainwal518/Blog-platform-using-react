@@ -1,4 +1,3 @@
-// ThemeToggle.jsx
 import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { toggleTheme } from "../../store/themeSlice";

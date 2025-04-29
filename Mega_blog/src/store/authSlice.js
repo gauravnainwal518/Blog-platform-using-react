@@ -1,8 +1,11 @@
 import { createSlice } from "@reduxjs/toolkit";
 
-const initialState = {
-  status: false, // Authentication status
-  userData: null, // Placeholder for user data
+// Load from localStorage if available
+const savedAuthState = JSON.parse(localStorage.getItem("authState"));
+
+const initialState = savedAuthState || {
+  status: false,
+  userData: null,
 };
 
 const authSlice = createSlice({
@@ -13,6 +16,7 @@ const authSlice = createSlice({
       if (action.payload && action.payload.userData) {
         state.status = true;
         state.userData = action.payload.userData;
+        localStorage.setItem("authState", JSON.stringify(state));  // Save to localStorage
       } else {
         console.error("User data is required for login.");
       }
@@ -20,10 +24,12 @@ const authSlice = createSlice({
     logout: (state) => {
       state.status = false;
       state.userData = null;
+      localStorage.removeItem("authState");  // Clear from localStorage
     },
     clearAuthData: (state) => {
       state.status = false;
       state.userData = null;
+      localStorage.removeItem("authState");  // Clear from localStorage
     },
   },
 });

@@ -2,14 +2,13 @@ import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import appwriteService from "../appwrite/config";
 import { PostForm } from "../components";
-import { useSelector } from "react-redux"; // To get the darkMode state
+import { useSelector } from "react-redux";
 
 function EditPost() {
   const { slug } = useParams();
   const [post, setPost] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Get the darkMode state from Redux or context
   const isDarkMode = useSelector((state) => state.theme.isDarkMode);
 
   useEffect(() => {

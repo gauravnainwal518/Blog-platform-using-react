@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { getAiResponse } from "../aiservice/aiservice";
-import { useSelector } from "react-redux"; // To get darkMode state
+import { useSelector } from "react-redux";
+import { toast } from "react-toastify";
 
 const AiSearch = () => {
   const [inputText, setInputText] = useState("");
@@ -8,7 +9,7 @@ const AiSearch = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const isDarkMode = useSelector((state) => state.theme.isDarkMode); // Access dark mode state from Redux
+  const isDarkMode = useSelector((state) => state.theme.isDarkMode);
 
   const handleSearch = async () => {
     if (!inputText.trim()) return;
@@ -16,6 +17,20 @@ const AiSearch = () => {
     setLoading(true);
     setError("");
     setResponseText("");
+
+    // Show a toast message indicating token limit has been reached
+    toast.info(
+      "This service is currently not active. We apologize for the inconvenience.",
+      {
+        position: "top-center",
+        autoClose: 5000, // Auto close after 5 seconds
+      }
+    );
+
+    // short delay before removing the message
+    setTimeout(() => {
+      toast.dismiss(); // Dismiss the toast message after some time
+    }, 5000);
 
     try {
       const result = await getAiResponse(inputText);

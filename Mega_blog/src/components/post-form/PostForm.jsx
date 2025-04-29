@@ -22,7 +22,6 @@ function PostForm({ post }) {
   const dispatch = useDispatch();
   const userData = useSelector((state) => state.auth.userData);
 
-  // Access theme state from Redux store
   const isDarkMode = useSelector((state) => state.theme.isDarkMode);
 
   const submit = async (data) => {

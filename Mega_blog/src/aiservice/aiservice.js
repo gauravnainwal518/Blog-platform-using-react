@@ -21,7 +21,7 @@ export const getAiResponse = async (inputText) => {
     return parsed.response;
 
   } catch (error) {
-    console.error('❌ AI Service Error:', error?.response?.data || error.message);
+    console.error(' AI Service Error:', error?.response?.data || error.message);
     throw error;
   }
 };

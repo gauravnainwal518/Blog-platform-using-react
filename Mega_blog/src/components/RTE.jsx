@@ -1,10 +1,9 @@
 import React from "react";
 import { Editor } from "@tinymce/tinymce-react";
 import { Controller } from "react-hook-form";
-import { useSelector } from "react-redux"; // Import useSelector to access Redux state
+import { useSelector } from "react-redux";
 
 export default function RTE({ name, control, label, defaultValue = "" }) {
-  // Get the darkMode state from Redux
   const isDarkMode = useSelector((state) => state.theme.isDarkMode);
 
   const contentStyle = isDarkMode

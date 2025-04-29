@@ -1,6 +1,7 @@
 import conf from '../conf/conf.js';
 import { Client, ID, Databases, Storage, Account, Query } from "appwrite";
 import { addPost } from '../store/postSlice.js';
+import { toast } from 'react-toastify';
 
 export class Service {
     client = new Client();
@@ -20,17 +21,17 @@ export class Service {
 
     async getUserData() {
         try {
-            return await this.account.get();
+            const userData = await this.account.get();
+            toast.success('User data fetched successfully!');  
+            return userData;
         } catch (error) {
             console.error("Appwrite service :: getUserData :: error", error);
-            throw error;
+            toast.error('Failed to fetch user data.'); 
         }
     }
 
     async uploadFile(file) {
         try {
-            //console.log("Starting file upload...", file);
-
             if (!file || typeof file !== "object" || !file.size) {
                 throw new Error("Invalid file object passed to uploadFile.");
             }
@@ -41,22 +42,23 @@ export class Service {
                 file
             );
 
-            //console.log("File uploaded successfully:", response);
+            toast.success('File uploaded successfully!'); 
             return response;
-
         } catch (error) {
-            console.error("File upload error:");
-            console.dir(error);
+            console.error("File upload error:", error);
+            toast.error('Failed to upload file.'); 
             throw error;
         }
     }
 
     async createPost({ title, slug, content, featuredImageFile, status, userId }) {
         if (!title || !slug || !content || !status || !userId) {
+            toast.error('All fields are required to create a post.'); 
             throw new Error("All fields are required to create a post.");
         }
     
         if (!featuredImageFile) {
+            toast.error('Featured image is required.'); 
             throw new Error("Featured image is required.");
         }
     
@@ -75,8 +77,6 @@ export class Service {
                 likedBy: [] // Initialize likedBy as an empty array to track users who liked the post
             };
     
-            console.log("Creating post with data:", postData);
-    
             const createdPost = await this.databases.createDocument(
                 conf.appwriteDatabaseId,
                 conf.appwriteCollectionId,
@@ -84,18 +84,15 @@ export class Service {
                 postData
             );
     
-            console.log("Created post response:", createdPost);
-    
+            toast.success('Post created successfully!');  
             return createdPost;
-    
         } catch (error) {
             console.error("Appwrite service :: createPost :: error", error);
+            toast.error('Failed to create post.');  
             throw error;
         }
     }
-    
-    
-    
+
     async fetchUserPosts(userId) {
         try {
             const response = await this.databases.listDocuments(
@@ -105,9 +102,11 @@ export class Service {
                     Query.equal('userId', userId)
                 ]
             );
+            toast.success('Fetched user posts successfully!'); 
             return response.documents;
         } catch (error) {
             console.error("Appwrite service :: fetchUserPosts :: error", error);
+            toast.error('Failed to fetch user posts.'); 
             throw error;
         }
     }
@@ -118,24 +117,11 @@ export class Service {
                 conf.appwriteDatabaseId,
                 conf.appwriteCollectionId
             );
+            toast.success('Fetched all posts successfully!');  
             return response.documents;
         } catch (error) {
             console.error("Appwrite service :: getAllPosts :: error", error);
-            throw error;
-        }
-    }
-
-    async getPosts() {
-        try {
-            const response = await this.databases.listDocuments(
-                conf.appwriteDatabaseId,
-                conf.appwriteCollectionId
-            );
-            // Print the documents to see their structure
-        console.log("Fetched Posts:", response.documents);
-            return response.documents;
-        } catch (error) {
-            console.error("Appwrite service :: getPosts :: error", error);
+            toast.error('Failed to fetch all posts.');  
             throw error;
         }
     }
@@ -149,16 +135,18 @@ export class Service {
                     Query.equal('slug', slug)
                 ]
             );
+            toast.success('Fetched post successfully!');  
             return response.documents.length > 0 ? response.documents[0] : null;
         } catch (error) {
             console.error("Appwrite service :: getPost :: error", error);
+            toast.error('Failed to fetch post.');  
             throw error;
         }
     }
 
     async updatePost(postId, updatedData) {
         try {
-            const now = new Date().toISOString(); // Update timestamp
+            const now = new Date().toISOString(); 
             const updatedPost = {
                 ...updatedData,
                 updatedAt: now,
@@ -170,10 +158,11 @@ export class Service {
                 postId,
                 updatedPost
             );
+            toast.success('Post updated successfully!');  
             return response;
         } catch (error) {
             console.error("Error updating post:", error);
-            throw error;
+            toast.error('Failed to update post.');  
         }
     }
 
@@ -184,10 +173,11 @@ export class Service {
                 conf.appwriteCollectionId,
                 postId
             );
-            console.log("Post deleted successfully:", postId);
+            toast.success('Post deleted successfully!');  
             return true;
         } catch (error) {
             console.error("Error deleting post:", error);
+            toast.error('Failed to delete post.');  
             throw error;
         }
     }
@@ -195,10 +185,11 @@ export class Service {
     async deleteFile(fileId) {
         try {
             const response = await this.bucket.deleteFile(conf.appwriteBucketId, fileId);
-            console.log("File deleted successfully:", response);
+            toast.success('File deleted successfully!');  
             return response;
         } catch (error) {
             console.error("Error deleting file:", error);
+            toast.error('Failed to delete file.'); 
             throw error;
         }
     }
@@ -217,9 +208,9 @@ export class Service {
         return this.fetchUserPosts(userId);
     }
 
-
     async createComment({ content, articleId, userId }) {
         if (!content || !articleId || !userId) {
+            toast.error('All fields are required to create a comment.');  
             throw new Error("All fields are required to create a comment.");
         }
     
@@ -240,16 +231,18 @@ export class Service {
                 commentData
             );
     
-            console.log("Created comment:", response);
+            toast.success('Comment created successfully!');  
             return response;
         } catch (error) {
             console.error("Appwrite service :: createComment :: error", error);
+            toast.error('Failed to create comment.');  
             throw error;
         }
     }
     
     async fetchCommentsByArticleId(articleId) {
         if (!articleId) {
+            toast.error('Article ID is required to fetch comments.');  
             throw new Error("Article ID is required to fetch comments.");
         }
     
@@ -262,10 +255,11 @@ export class Service {
                 ]
             );
     
-            console.log("Fetched comments:", response.documents);
+            toast.success('Fetched comments successfully!');  
             return response.documents;
         } catch (error) {
             console.error("Appwrite service :: fetchCommentsByArticleId :: error", error);
+            toast.error('Failed to fetch comments.'); 
             throw error;
         }
     }
@@ -277,30 +271,23 @@ export class Service {
                 conf.appwriteCommentsCollectionId,
                 commentId
             );
-            console.log("Comment deleted successfully:", commentId);
+            toast.success('Comment deleted successfully!');  
             return true;
         } catch (error) {
             console.error("Error deleting comment:", error);
+            toast.error('Failed to delete comment.');  
             throw error;
         }
     }
     
     async updateComment(commentId, updatedContent) {
-        // Ensure updatedContent is a string before passing it to the database
         const contentString = typeof updatedContent === 'string'
           ? updatedContent.trim() 
           : String(updatedContent).trim(); // Convert to string explicitly if it's not a string
       
-        console.log("Updating comment content (Appwrite):", contentString); // Log content
-      
         if (!contentString) {
-          alert("Content cannot be empty!");
+          toast.error("Content cannot be empty!");  
           throw new Error("Content is required to update a comment.");
-        }
-      
-        if (contentString.length > 255) {
-          alert("Content must be less than 255 characters!");
-          throw new Error("Content too long.");
         }
       
         try {
@@ -313,15 +300,16 @@ export class Service {
             updatedComment
           );
       
-          console.log("Updated comment:", response);
+          toast.success('Comment updated successfully!');  
           return response;
         } catch (error) {
           console.error("Error updating comment:", error);
+          toast.error('Failed to update comment.');  
           throw error;
         }
       }
 
-      async likePost(postId, userId) {
+    async likePost(postId, userId) {
         try {
             // Fetch the current post data
             const post = await this.databases.getDocument(
@@ -353,16 +341,16 @@ export class Service {
                     { likedBy: likedByArray }
                 );
     
-                // Return the updated post data with the new like count
+                toast.success('Post liked/unliked successfully!');  
                 return updatedPost;
             }
         } catch (error) {
             console.error('Error liking/unliking post:', error);
+            toast.error('Failed to like/unlike post.');  
             throw new Error('Unable to toggle like on the post.');
         }
     }
-    
-}    
+}
 
 const service = new Service();
 export default service;

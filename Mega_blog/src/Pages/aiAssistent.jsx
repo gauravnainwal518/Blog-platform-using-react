@@ -1,8 +1,7 @@
 import AiSearch from "./aisearch";
-import { useSelector } from "react-redux"; // To get the darkMode state
+import { useSelector } from "react-redux";
 
 const AiAssistant = () => {
-  // Get the darkMode state from Redux or context
   const isDarkMode = useSelector((state) => state.theme.isDarkMode);
 
   return (

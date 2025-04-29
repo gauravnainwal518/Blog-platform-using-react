@@ -17,7 +17,7 @@ const AllPosts = () => {
     const fetchPosts = async () => {
       try {
         const fetchedPosts = await appwriteService.getPosts();
-        console.log("Fetched Posts:", fetchedPosts); // Log fetched posts to check the response
+        // console.log("Fetched Posts:", fetchedPosts); // Log fetched posts to check the response
 
         // Ensure fetched posts are an array before setting state
         setPosts(Array.isArray(fetchedPosts) ? fetchedPosts : []);
@@ -38,7 +38,7 @@ const AllPosts = () => {
       ? posts.filter((post) => post.userId === userData?.$id)
       : posts;
 
-  console.log("Filtered Posts:", filteredPosts); // Log filtered posts to check filtering logic
+  //console.log("Filtered Posts:", filteredPosts); // Log filtered posts to check filtering logic
 
   return (
     <div

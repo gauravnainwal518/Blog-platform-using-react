@@ -11,10 +11,9 @@ function App() {
   const [loading, setLoading] = useState(true);
   const dispatch = useDispatch();
 
-  // Access dark mode from Redux store
   const isDarkMode = useSelector((state) => state.theme.isDarkMode);
 
-  // Log dark mode value when it changes
+  // Log dark mode value when it changes->error debugging
   useEffect(() => {
     // console.log("Is dark mode enabled?", isDarkMode);
   }, [isDarkMode]);

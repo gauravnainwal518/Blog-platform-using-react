@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { useSelector } from "react-redux"; // Import Redux hook
-import service from "../appwrite/config"; // Your Appwrite service
+import { useSelector } from "react-redux";
+import service from "../appwrite/config";
 
 const CommentSection = ({ postId }) => {
   const [commentText, setCommentText] = useState(""); // For adding a new comment
@@ -39,7 +39,7 @@ const CommentSection = ({ postId }) => {
 
     try {
       await service.createComment({
-        content: String(limitedContent), // Ensure it's a string
+        content: String(limitedContent),
         articleId: postId,
         userId: currentUserId,
       });
@@ -71,7 +71,7 @@ const CommentSection = ({ postId }) => {
     if (!newContent.trim()) return;
 
     const limitedContent = newContent.trim().substring(0, 255);
-    console.log("Updating comment with content:", limitedContent); // Log the content before updating
+    //console.log("Updating comment with content:", limitedContent); // Log the content before updating
 
     try {
       const oldComment = comments.find((comment) => comment.$id === commentId);

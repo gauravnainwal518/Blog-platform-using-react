@@ -1,41 +1,71 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { Button, Input } from "./index";
+import { useDispatch, useSelector } from "react-redux";
+import authService from "../appwrite/auth";
 import { login as authLogin } from "../store/authSlice";
 import { setPosts } from "../store/postSlice";
-import { Button, Input } from "./index"; // Removed Logo import
-import { useDispatch } from "react-redux";
-import authService from "../appwrite/auth";
-import appwriteService from "../appwrite/config";
 import { useForm } from "react-hook-form";
-import { useSelector } from "react-redux"; // Import useSelector to access the dark mode state
+import { toast } from "react-toastify";
 
 function Login() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { register, handleSubmit } = useForm();
-  const [error, setError] = useState("");
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm();
+  const [isEmailNotVerified, setIsEmailNotVerified] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  // Access the dark mode state
   const isDarkMode = useSelector((state) => state.theme.isDarkMode);
 
   const login = async (data) => {
-    setError("");
+    setIsEmailNotVerified(false);
+    setIsLoading(true);
+
     try {
-      const session = await authService.login(data);
-      if (session) {
-        const userData = await authService.getCurrentUser();
+      const { user, posts } = await authService.login(data);
 
-        dispatch(setPosts([])); // Clear previous posts
-        const posts = await appwriteService.fetchUserPosts(userData.$id);
-
-        if (userData) {
-          dispatch(authLogin({ userData }));
+      if (user) {
+        if (!user.emailVerification) {
+          setIsEmailNotVerified(true);
+          await authService.sendVerificationEmail();
+          toast.info("Verification email sent. Please check your inbox.");
+        } else {
+          dispatch(authLogin({ userData: user }));
           dispatch(setPosts(posts));
+          toast.success("Logged in successfully!");
+          navigate("/");
         }
-        navigate("/");
       }
     } catch (error) {
-      setError(error.message);
+      toast.error(error.message || "Login failed. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleResendVerification = async () => {
+    try {
+      toast.info("Sending verification email...");
+      await authService.sendVerificationEmail();
+      toast.success("Verification email resent successfully!");
+    } catch (error) {
+      toast.error("Failed to resend verification email.");
+    }
+  };
+
+  const handleForgotPassword = async () => {
+    try {
+      const email = prompt("Please enter your email for password recovery:");
+      if (!email) return;
+
+      await authService.sendRecoveryEmail(email);
+      toast.success("Password reset email sent!");
+    } catch (error) {
+      toast.error("Failed to send password reset email.");
     }
   };
 
@@ -53,11 +83,7 @@ function Login() {
         }`}
       >
         <div className="mb-6 flex justify-center">
-          <img
-            src="/typenest.jpg" // Removed logo import
-            alt="Logo"
-            className="w-28 h-auto"
-          />
+          <img src="/typenest.png" alt="Logo" className="w-28 h-auto" />
         </div>
         <h2
           className={`text-center text-3xl font-extrabold mb-4 ${
@@ -71,7 +97,7 @@ function Login() {
             isDarkMode ? "text-gray-400" : "text-gray-600"
           }`}
         >
-          Don&apos;t have an account?&nbsp;
+          Don&apos;t have an account?{" "}
           <Link
             to="/signup"
             className="text-purple-600 hover:underline font-medium"
@@ -79,15 +105,23 @@ function Login() {
             Sign Up
           </Link>
         </p>
-        {error && (
-          <div
-            className={`${
-              isDarkMode ? "bg-red-100 text-red-800" : "bg-red-100 text-red-800"
-            } p-3 rounded-md mt-4 text-center`}
-          >
-            {error}
+
+        {/* Email not verified message */}
+        {isEmailNotVerified && (
+          <div className="bg-yellow-100 text-yellow-800 p-3 rounded-md mt-4 text-center">
+            Your email is not verified. Please check your inbox.
+            <div className="mt-2">
+              <Button
+                onClick={handleResendVerification}
+                className="bg-yellow-500 hover:bg-yellow-600 text-white py-2 px-4 rounded"
+              >
+                Resend Verification Email
+              </Button>
+            </div>
           </div>
         )}
+
+        {/* Login Form */}
         <form onSubmit={handleSubmit(login)} className="mt-6 space-y-6">
           <div className="space-y-4">
             <Input
@@ -96,40 +130,58 @@ function Login() {
               type="email"
               {...register("email", {
                 required: "Email is required",
-                validate: {
-                  matchPattern: (value) =>
-                    /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/.test(value) ||
-                    "Enter a valid email address",
+                pattern: {
+                  value: /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/,
+                  message: "Enter a valid email address",
                 },
               })}
               className={`p-4 rounded-lg border-2 focus:outline-none focus:border-purple-500 ${
                 isDarkMode
                   ? "bg-gray-700 text-white placeholder-gray-400"
-                  : "bg-white text-gray-800"
+                  : "bg-white text-gray-900 placeholder-gray-500"
               }`}
             />
+            {errors.email && (
+              <p className="text-red-600 text-sm">{errors.email.message}</p>
+            )}
+
             <Input
               label="Password:"
               type="password"
               placeholder="Enter your password"
-              {...register("password", { required: "Password is required" })}
+              {...register("password", {
+                required: "Password is required",
+                minLength: {
+                  value: 6,
+                  message: "Password must be at least 6 characters",
+                },
+              })}
               className={`p-4 rounded-lg border-2 focus:outline-none focus:border-purple-500 ${
                 isDarkMode
                   ? "bg-gray-700 text-white placeholder-gray-400"
-                  : "bg-white text-gray-800"
+                  : "bg-white text-gray-900 placeholder-gray-500"
               }`}
             />
+            {errors.password && (
+              <p className="text-red-600 text-sm">{errors.password.message}</p>
+            )}
+          </div>
 
+          <div className="flex flex-col items-center space-y-3">
             <Button
               type="submit"
-              className={`w-full bg-purple-600 hover:bg-purple-700 text-white text-lg font-semibold py-3 px-6 rounded-lg transition duration-300 ${
-                isDarkMode
-                  ? "bg-purple-600 text-white"
-                  : "bg-purple-600 text-white"
-              }`}
+              className="w-full text-lg py-3 bg-purple-600 text-white rounded-lg"
+              disabled={isLoading}
             >
-              Sign in
+              {isLoading ? "Logging in..." : "Log In"}
             </Button>
+            <button
+              type="button"
+              onClick={handleForgotPassword}
+              className="text-sm font-medium text-purple-600 hover:underline"
+            >
+              Forgot Password?
+            </button>
           </div>
         </form>
       </div>

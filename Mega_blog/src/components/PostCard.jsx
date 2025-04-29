@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import appwriteService from "../appwrite/config";
 import { Link } from "react-router-dom";
-import { useSelector } from "react-redux"; // Access Redux store state
+import { useSelector } from "react-redux";
 
 function PostCard({ $id, title, featuredImage, createdAt }) {
   // Added createdAt prop

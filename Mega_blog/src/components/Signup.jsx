@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { login } from "../store/authSlice";
 import { Button, Input } from "./index.js";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useForm } from "react-hook-form";
 import authService from "../appwrite/auth";
-import { useSelector } from "react-redux"; // Import useSelector to access the dark mode state
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 function Signup() {
   const navigate = useNavigate();
@@ -13,22 +13,38 @@ function Signup() {
   const dispatch = useDispatch();
   const { register, handleSubmit } = useForm();
 
-  // Access the dark mode state
   const isDarkMode = useSelector((state) => state.theme.isDarkMode);
 
   const create = async (data) => {
     setError("");
     try {
-      const newUserData = await authService.createAccount(data);
-      if (newUserData) {
-        const currentUserData = await authService.getCurrentUser();
-        if (currentUserData) {
-          dispatch(login(currentUserData));
-        }
-        navigate("/");
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(data.email)) {
+        toast.error("Invalid email format");
+        return;
+      }
+
+      if (data.password.length < 8) {
+        toast.error("Password is too short. Minimum length is 8 characters.");
+        return;
+      }
+
+      const newUserData = await authService.createAccount({
+        email: data.email,
+        password: data.password,
+        name: data.name,
+      });
+
+      if (newUserData.success) {
+        toast.success(newUserData.message || "Account created successfully!");
+        navigate("/login");
+      } else {
+        toast.error(
+          newUserData.message || "Account creation failed. Try again."
+        );
       }
     } catch (error) {
-      setError(error.message);
+      toast.error(error.message || "Something went wrong. Please try again.");
     }
   };
 
@@ -38,6 +54,7 @@ function Signup() {
         isDarkMode ? "bg-gray-900" : "bg-white"
       }`}
     >
+      <ToastContainer />
       <div
         className={`w-full max-w-lg rounded-2xl p-10 border shadow-xl transition-transform hover:scale-[1.01] ${
           isDarkMode
@@ -46,7 +63,7 @@ function Signup() {
         }`}
       >
         <div className="mb-6 flex justify-center">
-          <img src="/typenest.jpg" alt="Logo" className="w-24 h-auto" />
+          <img src="/typenest.png" alt="TypeNest" className="w-24 h-auto" />
         </div>
         <h2
           className={`text-center text-3xl font-extrabold ${
@@ -60,7 +77,7 @@ function Signup() {
             isDarkMode ? "text-gray-400" : "text-gray-600"
           }`}
         >
-          Already have an account?&nbsp;
+          Already have an account?{" "}
           <Link
             to="/login"
             className="font-semibold text-purple-600 hover:underline"
