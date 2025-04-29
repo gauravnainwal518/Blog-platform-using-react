@@ -63,7 +63,10 @@ function App() {
       <Footer />
     </div>
   ) : (
-    <div className="loading">Loading...</div>
+    <div className="loading-screen">
+      <div className="spinner"></div>
+      <p>Loading...</p>
+    </div>
   );
 }
 
