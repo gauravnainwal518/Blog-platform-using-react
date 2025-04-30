@@ -4,19 +4,26 @@ import { Link } from "react-router-dom";
 import Button from "../components/Button";
 import parse from "html-react-parser";
 import dayjs from "dayjs";
-import { fetchAllPosts } from "../store/postsSlice"; // assumes redux slice setup
+
+import { setPosts } from "../store/postSlice";
+import appwriteService from "../appwrite/config";
 
 const AllPosts = () => {
   const dispatch = useDispatch();
   const [filter, setFilter] = useState("all");
+  const [loading, setLoading] = useState(true);
 
   const posts = useSelector((state) => state.posts.allPosts);
-  const loading = useSelector((state) => state.posts.loading);
   const userData = useSelector((state) => state.auth.userData);
   const isDarkMode = useSelector((state) => state.theme.isDarkMode);
 
   useEffect(() => {
-    dispatch(fetchAllPosts());
+    appwriteService.getPosts().then((res) => {
+      if (res && res.documents) {
+        dispatch(setPosts(res.documents));
+      }
+      setLoading(false);
+    });
   }, [dispatch]);
 
   const filteredPosts =
