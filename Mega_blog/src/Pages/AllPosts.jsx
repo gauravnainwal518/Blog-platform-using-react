@@ -18,7 +18,7 @@ const AllPosts = () => {
   const isDarkMode = useSelector((state) => state.theme.isDarkMode);
 
   useEffect(() => {
-    appwriteService.getPost().then((res) => {
+    appwriteService.getAllPosts().then((res) => {
       if (res && res.documents) {
         dispatch(setPosts(res.documents));
       }
