@@ -101,18 +101,34 @@ export class AuthService {
         }
     }
 
-    // Logout User
-    async logout() {
-        try {
-            await this.account.deleteSessions(); // Destroy all sessions
-            console.log("AuthService :: logout :: Appwrite session deleted successfully.");
-            toast.success('Logged out successfully!'); 
-        } catch (error) {
-            console.error("AuthService :: logout :: error", error);
+   // Logout User
+async logout() {
+    try {
+        await this.account.deleteSessions(); // Try to destroy all sessions
+        console.log("AuthService :: logout :: Appwrite session deleted successfully.");
+        toast.success('Logged out successfully!');
+    } catch (error) {
+        console.error("AuthService :: logout :: error", error);
+
+        // Gracefully handle guest session error
+        if (
+            error?.message?.includes("missing scope") ||
+            error?.message?.toLowerCase().includes("guest")
+        ) {
+            console.warn("User is already logged out or session is invalid.");
+            toast.info("Session already ended.");
+        } else {
             toast.error(error.message || "Failed to logout. Please try again.");
             throw new Error(error.message || "Failed to logout. Please try again.");
         }
+    } finally {
+        // Always clear local session info and redirect
+        localStorage.clear();
+        sessionStorage.clear();
+        window.location.href = '/login'; // Or navigate using router
     }
+}
+
 
     // Fetch Posts for Logged-In User
     async getUserPosts(userId) {
