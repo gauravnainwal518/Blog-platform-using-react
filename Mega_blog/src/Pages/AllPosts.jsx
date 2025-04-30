@@ -14,31 +14,27 @@ const AllPosts = () => {
   const isDarkMode = useSelector((state) => state.theme.isDarkMode);
 
   useEffect(() => {
-    const fetchPosts = async () => {
-      try {
-        const fetchedPosts = await appwriteService.getPosts();
-        console.log("Fetched Posts:", fetchedPosts); // Log fetched posts to check the response
-
-        // Ensure fetched posts are an array before setting state
-        setPosts(Array.isArray(fetchedPosts) ? fetchedPosts : []);
-      } catch (error) {
-        console.error("Error fetching posts:", error); // Log error if any occurs
-        setPosts([]); // Set an empty array in case of an error
-      } finally {
+    appwriteService
+      .getPosts()
+      .then((res) => {
+        if (res && res.documents) {
+          setPosts(res.documents);
+        } else {
+          setPosts([]);
+        }
         setLoading(false);
-      }
-    };
-
-    fetchPosts();
+      })
+      .catch((error) => {
+        console.error("Error fetching posts:", error);
+        setPosts([]);
+        setLoading(false);
+      });
   }, []);
 
-  // Filtering posts based on user data
   const filteredPosts =
     filter === "mine"
       ? posts.filter((post) => post.userId === userData?.$id)
       : posts;
-
-  //console.log("Filtered Posts:", filteredPosts); // Log filtered posts to check filtering logic
 
   return (
     <div
@@ -92,70 +88,60 @@ const AllPosts = () => {
         </div>
       ) : (
         <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 px-4 sm:px-6 lg:px-8">
-          {filteredPosts.map((post) => {
-            console.log("Post Object:", post); // Log each post object to check the 'createdAt' and other fields
-            console.log("Post Date:", post.createdAt); // Log the createdAt field to check its value
-
-            return (
-              <div
-                key={post.$id}
-                className={`${
-                  isDarkMode
-                    ? "bg-gray-800 text-white border-gray-700"
-                    : "bg-white text-gray-800 border-gray-200"
-                } border rounded-xl shadow-sm hover:shadow-md transition duration-300 overflow-hidden flex flex-col justify-between`}
-              >
-                <div className="p-5">
-                  {/* Removed Author Information */}
-                  <div className="mb-4">
-                    <span
-                      className={`text-sm ${
-                        isDarkMode ? "text-gray-400" : "text-gray-600"
-                      }`}
-                    >
-                      {/* Use createdAt for date */}
-                      {post.createdAt
-                        ? dayjs(post.createdAt).format("MMM D, YYYY") // Format the date correctly
-                        : "Unknown Date"}
-                    </span>
-                  </div>
-
-                  {/* Post Title */}
-                  <h2
-                    className={`text-xl font-semibold mb-3 ${
-                      isDarkMode ? "text-white" : "text-gray-900"
+          {filteredPosts.map((post) => (
+            <div
+              key={post.$id}
+              className={`${
+                isDarkMode
+                  ? "bg-gray-800 text-white border-gray-700"
+                  : "bg-white text-gray-800 border-gray-200"
+              } border rounded-xl shadow-sm hover:shadow-md transition duration-300 overflow-hidden flex flex-col justify-between`}
+            >
+              <div className="p-5">
+                <div className="mb-4">
+                  <span
+                    className={`text-sm ${
+                      isDarkMode ? "text-gray-400" : "text-gray-600"
                     }`}
                   >
-                    {post.title}
-                  </h2>
-
-                  {/* Post Content */}
-                  <div
-                    className={`text-sm ${
-                      isDarkMode ? "text-gray-300" : "text-gray-700"
-                    } line-clamp-3`}
-                  >
-                    {parse(post.content || "")}
-                  </div>
+                    {post.createdAt
+                      ? dayjs(post.createdAt).format("MMM D, YYYY")
+                      : "Unknown Date"}
+                  </span>
                 </div>
 
-                {/* Button to Read More */}
-                <div className="px-5 pb-5 mt-auto">
-                  <Link to={`/post/${post.slug}`}>
-                    <Button
-                      bgColor={`${
-                        isDarkMode
-                          ? "bg-blue-600 hover:bg-blue-700"
-                          : "bg-blue-600 hover:bg-blue-700"
-                      } text-white w-full`}
-                    >
-                      Read More
-                    </Button>
-                  </Link>
+                <h2
+                  className={`text-xl font-semibold mb-3 ${
+                    isDarkMode ? "text-white" : "text-gray-900"
+                  }`}
+                >
+                  {post.title}
+                </h2>
+
+                <div
+                  className={`text-sm ${
+                    isDarkMode ? "text-gray-300" : "text-gray-700"
+                  } line-clamp-3`}
+                >
+                  {parse(post.content || "")}
                 </div>
               </div>
-            );
-          })}
+
+              <div className="px-5 pb-5 mt-auto">
+                <Link to={`/post/${post.slug}`}>
+                  <Button
+                    bgColor={`${
+                      isDarkMode
+                        ? "bg-blue-600 hover:bg-blue-700"
+                        : "bg-blue-600 hover:bg-blue-700"
+                    } text-white w-full`}
+                  >
+                    Read More
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          ))}
         </div>
       )}
     </div>
