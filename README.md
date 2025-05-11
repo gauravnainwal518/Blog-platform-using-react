@@ -1,32 +1,34 @@
-# MegaBlog 📝
+# TypeNest 🪶
 
-**Live Demo**: [Click Here to View MegaBlog](https://blog-platform-using-react.vercel.app/) 🚀
+**Live Demo**: [Click Here to View TypeNest](https://blog-platform-using-react.vercel.app/) 🚀
 
-MegaBlog is a powerful and modern blogging platform built using **React.js**, **Appwrite**, and **TinyMCE**. It allows users to create, edit, and manage rich-text blog posts with features like image uploads, user authentication, and responsive design.
+**TypeNest** is a full-featured blogging platform built with **React.js**, **Redux**, **Appwrite**, and **TinyMCE**. It allows users to write and publish rich-text blog posts, upload images, manage their content, and securely authenticate, all with a seamless user experience.
 
 ---
 
 ## 🚀 Features
 
-- 🧑‍💻 User Authentication (Signup/Login)
-- 📝 Create, Edit, Delete Posts
-- 🖼️ Upload Images with Blog Posts
-- 💾 Appwrite Backend Integration
-- 🧠 Rich Text Editing using TinyMCE
-- 🔐 JWT-secured routes and data
-- 📱 Fully Responsive UI
-- ⚡ Built with Vite for fast development
+- 🔐 User Authentication (Sign Up / Login / Logout)
+- ✍️ Rich Text Blog Editor using TinyMCE
+- 📝 Create, Edit, and Delete Blog Posts
+- 🖼️ Image Upload via Appwrite Storage
+- ⚙️ State Management using Redux
+- 📱 Mobile-Responsive Design
+- ⚡ Superfast Development with Vite + Tailwind CSS
+- 🔒 Protected Routes using JWT
 
 ---
 
 ## 🛠️ Tech Stack
 
 - **Frontend**: React.js, Vite, Tailwind CSS
-- **Backend**: Appwrite (Self-hosted or Cloud)
-- **Editor**: TinyMCE (Rich text editor)
-- **State Management**: useState, useEffect, Custom Hooks
-- **Storage**: Appwrite Bucket (for images/files)
+- **State Management**: Redux, Redux Toolkit
+- **Backend-as-a-Service**: Appwrite (Auth, DB, Storage)
+- **Editor**: TinyMCE (Rich Text Editor)
+- **Routing**: React Router
+- **Image/File Hosting**: Appwrite Buckets
 
 ---
+
 
 
