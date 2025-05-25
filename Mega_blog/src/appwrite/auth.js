@@ -1,6 +1,5 @@
 import conf from '../conf/conf.js';
 import { Client, Account, ID, Databases, Query } from "appwrite";
-import { toast } from 'react-toastify'; 
 
 export class AuthService {
     client = new Client();
@@ -24,14 +23,12 @@ export class AuthService {
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             if (!emailRegex.test(email)) {
                 console.error("Invalid email format:", email);
-                toast.error("Invalid email format"); // Show error toast
                 throw new Error("Invalid email format");
             }
 
             // Validate password length
             if (password.length < 8) {
                 console.error("Password is too short. Minimum length is 8 characters.");
-                toast.error("Password is too short. Minimum length is 8 characters."); // Show error toast
                 throw new Error("Password is too short. Minimum length is 8 characters.");
             }
 
@@ -43,24 +40,20 @@ export class AuthService {
                 // Step 2: Log the user in (so they are authenticated)
                 const session = await this.account.createEmailPasswordSession(email, password);
                 if (!session) {
-                    toast.error("Failed to log in user after account creation.");  
                     throw new Error("Failed to log in user after account creation.");
                 }
 
                 // Step 3: Send the verification email after successful login
                 await this.sendVerificationEmail();
 
-                toast.success("Account created successfully. Please verify your email.");
                 return { success: true, message: "Account created successfully. Please verify your email.", user: userAccount };
             }
-            toast.error("Account creation failed. Try again."); 
             return { success: false, message: "Account creation failed. Try again." };
         } catch (error) {
             console.error('AuthService :: createAccount :: error', error);
             if (error.response) {
                 console.error('Appwrite error details:', error.response);
             }
-            toast.error(error.message || 'Account creation failed. Please try again.'); // 
             return { success: false, message: error.message || 'Account creation failed. Please try again.' };
         }
     }
@@ -73,20 +66,17 @@ export class AuthService {
 
             if (!user.emailVerification) {
                 await this.account.deleteSession("current"); // Force logout if email not verified
-                toast.error('Email not verified. Please verify your email before logging in.'); 
                 throw new Error('Email not verified. Please verify your email before logging in.');
             }
 
             const posts = await this.getUserPosts(user.$id);
 
-            toast.success('Login successful!'); 
             return {
                 user,
                 posts
             };
         } catch (error) {
             console.error('AuthService :: login :: error', error);
-            toast.error(error.message || 'Login failed. Please check your credentials.'); // Show error toast
             throw new Error(error.message || 'Login failed. Please check your credentials.');
         }
     }
@@ -101,34 +91,30 @@ export class AuthService {
         }
     }
 
-   // Logout User
-async logout() {
-    try {
-        await this.account.deleteSessions(); // Try to destroy all sessions
-        console.log("AuthService :: logout :: Appwrite session deleted successfully.");
-        toast.success('Logged out successfully!');
-    } catch (error) {
-        console.error("AuthService :: logout :: error", error);
+    // Logout User
+    async logout() {
+        try {
+            await this.account.deleteSessions(); // Try to destroy all sessions
+            console.log("AuthService :: logout :: Appwrite session deleted successfully.");
+        } catch (error) {
+            console.error("AuthService :: logout :: error", error);
 
-        // Gracefully handle guest session error
-        if (
-            error?.message?.includes("missing scope") ||
-            error?.message?.toLowerCase().includes("guest")
-        ) {
-            console.warn("User is already logged out or session is invalid.");
-            toast.info("Session already ended.");
-        } else {
-            toast.error(error.message || "Failed to logout. Please try again.");
-            throw new Error(error.message || "Failed to logout. Please try again.");
+            // Gracefully handle guest session error
+            if (
+                error?.message?.includes("missing scope") ||
+                error?.message?.toLowerCase().includes("guest")
+            ) {
+                console.warn("User is already logged out or session is invalid.");
+            } else {
+                throw new Error(error.message || "Failed to logout. Please try again.");
+            }
+        } finally {
+            // Always clear local session info and redirect
+            localStorage.clear();
+            sessionStorage.clear();
+            window.location.href = '/login'; // Or navigate using router
         }
-    } finally {
-        // Always clear local session info and redirect
-        localStorage.clear();
-        sessionStorage.clear();
-        window.location.href = '/login'; // Or navigate using router
     }
-}
-
 
     // Fetch Posts for Logged-In User
     async getUserPosts(userId) {
@@ -152,7 +138,6 @@ async logout() {
             return await this.account.createVerification(`${conf.appwriteDomain}/verify`);
         } catch (error) {
             console.error('AuthService :: sendVerificationEmail :: error', error);
-            toast.error(error.message || 'Failed to send verification email.'); 
             throw new Error(error.message || 'Failed to send verification email.');
         }
     }
@@ -164,7 +149,6 @@ async logout() {
             return await this.account.createRecovery(email, `${conf.appwriteDomain}/reset-password`);
         } catch (error) {
             console.error('AuthService :: sendRecoveryEmail :: error', error);
-            toast.error(error.message || 'Failed to send recovery email.'); 
             throw new Error(error.message || 'Failed to send recovery email.');
         }
     }
@@ -175,7 +159,6 @@ async logout() {
             return await this.account.updateRecovery(userId, secret, newPassword, newPassword);
         } catch (error) {
             console.error('AuthService :: confirmRecovery :: error', error);
-            toast.error(error.message || 'Password reset failed.'); 
             throw new Error(error.message || 'Password reset failed.');
         }
     }
@@ -186,7 +169,6 @@ async logout() {
             return await this.account.updateVerification(userId, secret);
         } catch (error) {
             console.error('AuthService :: confirmEmailVerification :: error', error);
-            toast.error(error.message || 'Email verification failed.'); 
             throw new Error(error.message || 'Email verification failed.');
         }
     }
