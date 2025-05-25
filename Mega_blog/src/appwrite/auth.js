@@ -1,5 +1,6 @@
 import conf from '../conf/conf.js';
 import { Client, Account, ID, Databases, Query } from "appwrite";
+import { toast } from 'react-toastify';
 
 export class AuthService {
     client = new Client();
@@ -45,6 +46,9 @@ export class AuthService {
 
                 // Step 3: Send the verification email after successful login
                 await this.sendVerificationEmail();
+
+                // Toast notification for verification email sent
+                toast.success("Verification link is sent to your email. Please check your inbox.");
 
                 return { success: true, message: "Account created successfully. Please verify your email.", user: userAccount };
             }
