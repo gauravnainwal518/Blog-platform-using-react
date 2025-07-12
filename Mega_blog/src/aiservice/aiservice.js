@@ -7,7 +7,7 @@ export const getAiResponse = async (inputText) => {
   try {
     const response = await axios.post(
       appwriteFunctionUrl,
-      JSON.stringify({ inputText }), // Send raw stringified JSON
+      { inputText }, // Send raw JSON object
       {
         headers: {
           'X-Appwrite-Project': conf.appwriteProjectId,
@@ -16,12 +16,11 @@ export const getAiResponse = async (inputText) => {
       }
     );
 
-    // Parse the function's output
     const parsed = JSON.parse(response.data.response);
-    return parsed.response;
+    return parsed.output; // Use correct key returned from function
 
   } catch (error) {
-    console.error(' AI Service Error:', error?.response?.data || error.message);
+    console.error('AI Service Error:', error?.response?.data || error.message);
     throw error;
   }
 };
