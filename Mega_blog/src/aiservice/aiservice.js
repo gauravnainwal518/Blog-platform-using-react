@@ -1,7 +1,7 @@
 import axios from 'axios';
 import conf from "../conf/conf.js";
 
-const appwriteFunctionUrl = `${conf.appwriteUrl}/v1/functions/${conf.appwriteFunctionId}/executions`;
+const appwriteFunctionUrl = `${conf.appwriteUrl}/functions/${conf.appwriteFunctionId}/executions`;
 
 export const getAiResponse = async (inputText) => {
   try {
