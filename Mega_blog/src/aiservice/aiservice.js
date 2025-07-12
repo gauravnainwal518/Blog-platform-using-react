@@ -16,25 +16,26 @@ export const getAiResponse = async (inputText) => {
       }
     );
 
-   const rawOutput = response?.data?.output;
+    // Debug log - check the full response
+    console.log(" Full AI Function Response:", response);
+    console.log(" Response Data:", response.data);
 
-if (!rawOutput) {
-  throw new Error("Empty or invalid response from Appwrite Function");
-}
+    // Extract the correct field
+    const rawOutput = response?.data?.output;
 
+    // Log what we received
+    console.log(" Raw Output from AI:", rawOutput);
 
-    let parsed;
-    try {
-      parsed = JSON.parse(rawOutput);
-    } catch (err) {
-      console.error("JSON parse error:", err);
-      throw new Error("AI response could not be parsed.");
+    // Handle empty/missing output
+    if (!rawOutput) {
+      console.error(" AI Function returned no output:", response.data);
+      throw new Error("Empty or invalid response from Appwrite Function");
     }
 
-    return parsed?.output || "No output received from AI.";
+    return rawOutput;
 
   } catch (error) {
-    console.error("AI Service Error:", error?.response?.data || error.message);
+    console.error("🛑 AI Service Error:", error?.response?.data || error.message);
     throw error;
   }
 };
