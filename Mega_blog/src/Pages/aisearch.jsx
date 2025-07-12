@@ -18,26 +18,29 @@ const AiSearch = () => {
     setError("");
     setResponseText("");
 
-    // Show a toast message indicating token limit has been reached
-    toast.info(
-      "This service is currently not active. We apologize for the inconvenience.",
-      {
-        position: "top-center",
-        autoClose: 5000, // Auto close after 5 seconds
-      }
-    );
-
-    // short delay before removing the message
-    setTimeout(() => {
-      toast.dismiss(); // Dismiss the toast message after some time
-    }, 5000);
-
     try {
       const result = await getAiResponse(inputText);
-      setResponseText(result.response || "No response received.");
+
+      if (result && result.output) {
+        setResponseText(result.output);
+      } else {
+        setError("No response received from AI.");
+      }
     } catch (err) {
-      setError("Something went wrong. Please try again.");
       console.error(err);
+
+      // If Gemini Flash server is overloaded
+      if (err?.response?.data?.error?.status === "UNAVAILABLE") {
+        toast.error(
+          "Gemini Flash server is busy. Please try again in a few seconds.",
+          {
+            position: "top-center",
+            autoClose: 5000,
+          }
+        );
+      } else {
+        setError("Something went wrong. Please try again.");
+      }
     }
 
     setLoading(false);
