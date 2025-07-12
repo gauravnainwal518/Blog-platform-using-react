@@ -16,11 +16,12 @@ export const getAiResponse = async (inputText) => {
       }
     );
 
-    const rawOutput = response?.data?.response;
+   const rawOutput = response?.data?.output;
 
-    if (!rawOutput) {
-      throw new Error("Empty or invalid response from Appwrite Function");
-    }
+if (!rawOutput) {
+  throw new Error("Empty or invalid response from Appwrite Function");
+}
+
 
     let parsed;
     try {
