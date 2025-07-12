@@ -4,9 +4,6 @@ import conf from "../conf/conf.js";
 const appwriteFunctionUrl = `${conf.appwriteUrl}/functions/${conf.appwriteFunctionId}/executions`;
 
 export const getAiResponse = async (inputText) => {
-  console.log("📤 Sending request to Appwrite Function with:", inputText);
-  console.log("🌐 Full Function URL:", appwriteFunctionUrl);
-
   try {
     const response = await axios.post(
       appwriteFunctionUrl,
@@ -19,22 +16,37 @@ export const getAiResponse = async (inputText) => {
       }
     );
 
-    console.log("✅ Raw Axios Response:", response);
-    console.log("✅ Response Data:", response.data);
+    console.log(" Raw Response from Appwrite:", response);
 
-    const rawOutput = response?.data?.output;
-    console.log("🧠 AI Output:", rawOutput);
+    // STEP 1: extract raw string response from Appwrite Function
+    const rawString = response?.data?.response;
 
-    if (!rawOutput) {
-      throw new Error("Empty or invalid response from Appwrite Function");
+    if (!rawString) {
+      throw new Error("Appwrite Function returned empty response");
     }
 
-    return rawOutput;
+    // STEP 2: parse that string into JSON
+    let parsed;
+    try {
+      parsed = JSON.parse(rawString);
+    } catch (err) {
+      console.error(" Failed to parse function response:", rawString);
+      throw new Error("Could not parse Appwrite Function response.");
+    }
+
+    console.log(" Parsed AI Response:", parsed);
+
+    // STEP 3: extract the output field
+    const output = parsed?.output;
+
+    if (!output) {
+      throw new Error("Parsed response missing output field.");
+    }
+
+    return output;
 
   } catch (error) {
-    console.error("❌ AI Service Error: ", error.message);
-    console.error("❌ Full Error Object:", error);
-    console.error("❌ Error Response Data:", error?.response?.data);
+    console.error(" AI Service Error:", error.message);
     throw error;
   }
 };
