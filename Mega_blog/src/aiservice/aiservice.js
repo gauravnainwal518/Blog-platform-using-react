@@ -4,23 +4,25 @@ import conf from "../conf/conf.js";
 const appwriteFunctionUrl = `${conf.appwriteUrl}/functions/${conf.appwriteFunctionId}/executions`;
 
 export const getAiResponse = async (inputText) => {
-  console.log("InputText received in service:", inputText);
+  console.log("[AI Service] Input received:", inputText);
 
   try {
     const response = await axios.post(
       appwriteFunctionUrl,
-      JSON.stringify(inputText), // Send as raw string
+      JSON.stringify(inputText),
       {
         headers: {
           'X-Appwrite-Project': conf.appwriteProjectId,
           'Content-Type': 'application/json',
+          'Origin': window.location.origin
         },
+        withCredentials: true
       }
     );
 
-    console.log("Raw Response from Appwrite:", response.data);
+    console.log("[AI Service] Raw Response:", response.data);
 
-    // Handle both direct response and wrapped response cases
+    // Handle both direct and wrapped responses
     const responseData = response.data?.response || response.data;
     
     if (typeof responseData === 'string') {
@@ -28,14 +30,31 @@ export const getAiResponse = async (inputText) => {
         const parsed = JSON.parse(responseData);
         return parsed?.output || parsed;
       } catch {
-        return responseData; // Return as-is if not JSON
+        return responseData;
       }
+    }
+
+    if (responseData?.error) {
+      throw new Error(responseData.error);
     }
 
     return responseData?.output || responseData;
 
   } catch (error) {
-    console.error("AI Service Error:", error.message);
-    throw new Error(`AI Service failed: ${error.message}`);
+    console.error("[AI Service] Full Error:", {
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status
+    });
+
+    let errorMessage = "AI request failed";
+    if (error.response) {
+      errorMessage = error.response.data?.error || 
+                   `Server responded with ${error.response.status}`;
+    } else if (error.request) {
+      errorMessage = "No response received from server";
+    }
+
+    throw new Error(errorMessage);
   }
 };
