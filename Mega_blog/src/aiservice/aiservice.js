@@ -18,9 +18,7 @@ export const getAiResponse = async (inputText) => {
     const response = await axios({
       method: 'post',
       url: `${conf.appwriteUrl}/functions/${conf.appwriteFunctionId}/executions`,
-      data: new URLSearchParams({
-        body: requestBody
-      }),
+      data: new URLSearchParams({ body: requestBody }),
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
         'X-Appwrite-Project': conf.appwriteProjectId,
@@ -28,17 +26,19 @@ export const getAiResponse = async (inputText) => {
       timeout: 30000
     });
 
-    //  Correct parsing of Appwrite execution wrapper
+    //  Strict and safe response parsing
     let result;
     try {
-      if (response.data?.response) {
-        result = JSON.parse(response.data.response); // Parse your function's res.json()
+      if (typeof response.data?.response === 'string') {
+        console.log("[AI Service] Raw Appwrite response:", response.data.response);
+        result = JSON.parse(response.data.response);
       } else {
-        result = response.data;
+        console.error("Invalid Appwrite execution response:", response.data);
+        throw new Error("Invalid response format from server");
       }
     } catch (e) {
-      console.warn(" Response parsing failed:", e);
-      result = {};
+      console.warn(" Failed to parse Appwrite function response:", e);
+      throw new Error("Unable to parse AI server response");
     }
 
     if (result?.error) {
@@ -46,8 +46,8 @@ export const getAiResponse = async (inputText) => {
     }
 
     if (!result?.output && !result?.statusCode) {
-      console.error("Invalid response structure:", result);
-      throw new Error("Invalid response format from server");
+      console.error(" Unexpected structure in AI response:", result);
+      throw new Error("AI returned unexpected format");
     }
 
     return result.output || result;
