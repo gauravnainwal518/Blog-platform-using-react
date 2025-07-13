@@ -4,26 +4,27 @@ import conf from "../conf/conf.js";
 export const getAiResponse = async (inputText) => {
   console.log("[AI Service] Initiating request with:", inputText);
 
-  if (!inputText || (typeof inputText !== 'string' && typeof inputText !== 'object')) {
-    throw new Error("Input must be a string or object");
+  if (!inputText || typeof inputText !== 'string') {
+    throw new Error("Input must be a non-empty string");
   }
 
   try {
     const payload = {
-      inputText: typeof inputText === 'string' ? inputText : JSON.stringify(inputText)
+      inputText: inputText
     };
 
-    // Directly stringify payload instead of using URLSearchParams
-    const requestBody = JSON.stringify({ data: JSON.stringify(payload) });
+    // Appwrite expects a "body" field inside URLSearchParams
+    const formEncodedBody = new URLSearchParams();
+    formEncodedBody.append('body', JSON.stringify(payload));
 
     const response = await axios({
       method: 'post',
       url: `${conf.appwriteUrl}/functions/${conf.appwriteFunctionId}/executions`,
-      data: requestBody,
       headers: {
-        'Content-Type': 'application/json', //  Important: set correct content type
+        'Content-Type': 'application/x-www-form-urlencoded',
         'X-Appwrite-Project': conf.appwriteProjectId,
       },
+      data: formEncodedBody,
       timeout: 30000
     });
 
@@ -37,8 +38,8 @@ export const getAiResponse = async (inputText) => {
     let parsed;
     try {
       parsed = JSON.parse(execution.response);
-    } catch (parseErr) {
-      console.error("Failed to parse Appwrite function response:", parseErr);
+    } catch (err) {
+      console.error("Failed to parse Appwrite function response:", err);
       throw new Error("Unable to parse AI server response");
     }
 
