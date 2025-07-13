@@ -14,7 +14,7 @@ export const getAiResponse = async (inputText) => {
         headers: {
           'X-Appwrite-Project': conf.appwriteProjectId,
           'Content-Type': 'application/json',
-          'Origin': window.location.origin
+          
         },
         withCredentials: true
       }
