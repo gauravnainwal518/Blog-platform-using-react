@@ -9,13 +9,12 @@ export const getAiResponse = async (inputText) => {
   try {
     const response = await axios.post(
       appwriteFunctionUrl,
-      "", // send empty body
+      JSON.stringify({ inputText }), //  Send inputText in the body
       {
         headers: {
           'X-Appwrite-Project': conf.appwriteProjectId,
           'Content-Type': 'application/json',
-          //  SEND inputText as variable
-          'x-appwrite-function-variables': JSON.stringify({ inputText }),
+        
         },
       }
     );
@@ -23,7 +22,6 @@ export const getAiResponse = async (inputText) => {
     console.log("Raw Response from Appwrite:", response);
 
     const rawString = response?.data?.response;
-
     if (!rawString) {
       throw new Error("Appwrite Function returned empty response");
     }
