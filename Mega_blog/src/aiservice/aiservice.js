@@ -4,13 +4,13 @@ import conf from "../conf/conf.js";
 export const getAiResponse = async (inputText) => {
   console.log("[AI Service] Initiating request with:", inputText);
 
-  if (!inputText || (typeof inputText !== 'string' && typeof inputText !== 'object')) {
-    throw new Error("Input must be a string or object");
+  if (!inputText || typeof inputText !== 'string') {
+    throw new Error("Input must be a valid string");
   }
 
   try {
     const payload = {
-      inputText: typeof inputText === 'string' ? inputText : JSON.stringify(inputText)
+      inputText: inputText
     };
 
     const requestBody = JSON.stringify({ data: JSON.stringify(payload) });
@@ -21,35 +21,29 @@ export const getAiResponse = async (inputText) => {
       data: requestBody,
       headers: {
         'Content-Type': 'application/json',
-        'X-Appwrite-Project': conf.appwriteProjectId,
+        'X-Appwrite-Project': conf.appwriteProjectId
       },
       timeout: 30000
     });
 
-    // Parse the Appwrite response correctly
+    // ✅ Parse Appwrite's execution response
+    if (!response.data || !response.data.response) {
+      console.error("Invalid Appwrite execution response:", response.data);
+      throw new Error("Invalid Appwrite function response format");
+    }
+
     let result;
     try {
-      if (response.data?.response) {
-        result = JSON.parse(response.data.response);
-      } else {
-        console.warn("Invalid Appwrite execution response:", response.data);
-        throw new Error("Invalid response format from server");
-      }
-    } catch (e) {
-      console.warn("Failed to parse Appwrite function response:", e);
+      result = JSON.parse(response.data.response); // response is a stringified JSON
+    } catch (parseErr) {
+      console.error("Failed to parse Appwrite function response:", parseErr);
       throw new Error("Unable to parse AI server response");
     }
 
-    if (result?.error) {
-      throw new Error(result.error);
-    }
+    if (result?.error) throw new Error(result.error);
+    if (!result?.output) throw new Error("No output generated");
 
-    if (!result?.output && !result?.statusCode) {
-      console.error("Invalid response structure:", result);
-      throw new Error("Invalid response format from server");
-    }
-
-    return result.output || result;
+    return result.output;
 
   } catch (error) {
     console.error("[AI Service] Complete Error:", {
@@ -60,9 +54,7 @@ export const getAiResponse = async (inputText) => {
     });
 
     throw new Error(
-      error.response?.data?.error ||
-      error.message ||
-      "AI service unavailable"
+      error.response?.data?.error || error.message || "AI service unavailable"
     );
   }
 };
