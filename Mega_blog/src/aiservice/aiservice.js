@@ -9,33 +9,23 @@ export const getAiResponse = async (inputText) => {
   try {
     const response = await axios.post(
       appwriteFunctionUrl,
-      JSON.stringify({ inputText }), //  Send inputText in the body
+      { inputText }, //  send as plain object
       {
         headers: {
           'X-Appwrite-Project': conf.appwriteProjectId,
           'Content-Type': 'application/json',
-        
         },
       }
     );
 
     console.log("Raw Response from Appwrite:", response);
 
-    const rawString = response?.data?.response;
-    if (!rawString) {
+    //  Appwrite returns { output: "...text..." }
+    const output = response?.data?.output;
+
+    if (!output) {
       throw new Error("Appwrite Function returned empty response");
     }
-
-    let parsed;
-    try {
-      parsed = JSON.parse(rawString);
-    } catch (err) {
-      console.error("Failed to parse function response:", rawString);
-      throw new Error("Could not parse Appwrite Function response.");
-    }
-
-    const output = parsed?.output;
-    if (!output) throw new Error("Parsed response missing output field.");
 
     return output;
 
