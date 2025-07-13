@@ -6,17 +6,10 @@ const appwriteFunctionUrl = `${conf.appwriteUrl}/functions/${conf.appwriteFuncti
 export const getAiResponse = async (inputText) => {
   console.log("InputText received in service:", inputText);
 
-  if (!inputText || typeof inputText !== "string" || inputText.trim() === "") {
-    throw new Error("Invalid inputText");
-  }
-
   try {
     const response = await axios.post(
       appwriteFunctionUrl,
-      {
-        data: JSON.stringify({ inputText }), // 👈 required by Appwrite
-        async: false
-      },
+      JSON.stringify({ inputText }), //  Send raw JSON string
       {
         headers: {
           'X-Appwrite-Project': conf.appwriteProjectId,
