@@ -9,13 +9,9 @@ export const getAiResponse = async (inputText) => {
   }
 
   try {
-    const payload = {
-      inputText: inputText
-    };
-
-    // Appwrite expects a "body" field inside URLSearchParams
-    const formEncodedBody = new URLSearchParams();
-    formEncodedBody.append('body', JSON.stringify(payload));
+    // Form-encoded body exactly as Appwrite expects
+    const encodedBody = new URLSearchParams();
+    encodedBody.append("body", JSON.stringify({ inputText }));
 
     const response = await axios({
       method: 'post',
@@ -24,8 +20,8 @@ export const getAiResponse = async (inputText) => {
         'Content-Type': 'application/x-www-form-urlencoded',
         'X-Appwrite-Project': conf.appwriteProjectId,
       },
-      data: formEncodedBody,
-      timeout: 30000
+      data: encodedBody,
+      timeout: 30000,
     });
 
     const execution = response.data;
@@ -53,7 +49,7 @@ export const getAiResponse = async (inputText) => {
       message: error.message,
       request: error.config?.data,
       response: error.response?.data,
-      stack: error.stack
+      stack: error.stack,
     });
 
     throw new Error(
