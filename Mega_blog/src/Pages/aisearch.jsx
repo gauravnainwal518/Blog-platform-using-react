@@ -1,75 +1,113 @@
-import axios from "axios";
-import conf from "../conf/conf.js";
+import React, { useState } from "react";
+import { getAiResponse } from "../aiservice/aiservice";
+import { useSelector } from "react-redux";
+import { toast } from "react-toastify";
 
-export const getAiResponse = async (inputText) => {
-  console.log("[AI Service] Initiating request with:", inputText);
+const AiSearch = () => {
+  const [inputText, setInputText] = useState("");
+  const [responseText, setResponseText] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  if (
-    !inputText ||
-    (typeof inputText !== "string" && typeof inputText !== "object")
-  ) {
-    throw new Error("Input must be a string or object");
-  }
+  const isDarkMode = useSelector((state) => state.theme.isDarkMode);
 
-  try {
-    const payload = {
-      inputText:
-        typeof inputText === "string" ? inputText : JSON.stringify(inputText),
-    };
-
-    const requestBody = JSON.stringify({ data: JSON.stringify(payload) });
-
-    console.debug("[AI Service] Final request body:", requestBody);
-
-    const response = await axios({
-      method: "post",
-      url: `${conf.appwriteUrl}/functions/${conf.appwriteFunctionId}/executions`,
-      data: new URLSearchParams({
-        body: requestBody,
-      }),
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-        "X-Appwrite-Project": conf.appwriteProjectId,
-      },
-      timeout: 30000,
-    });
-
-    console.debug("[AI Service] Full response:", response);
-
-    if (!response.data) {
-      throw new Error("Empty response from server");
+  const handleSearch = async () => {
+    if (!inputText.trim()) {
+      toast.warn("Please enter a question or topic before searching.", {
+        position: "top-center",
+        autoClose: 3000,
+      });
+      return;
     }
 
-    let result;
+    console.log("Sending to AI:", inputText); // debug log
+
+    setLoading(true);
+    setError("");
+    setResponseText("");
+
     try {
-      result = response.data.response
-        ? JSON.parse(response.data.response)
-        : response.data;
-    } catch (e) {
-      console.warn("Response parsing warning:", e);
-      result = response.data;
+      const output = await getAiResponse(inputText);
+      setResponseText(output);
+    } catch (err) {
+      console.error(err);
+
+      if (err?.response?.data?.error?.status === "UNAVAILABLE") {
+        toast.error(
+          "Gemini Flash server is busy. Please try again in a few seconds.",
+          {
+            position: "top-center",
+            autoClose: 5000,
+          }
+        );
+      } else {
+        setError("Something went wrong. Please try again.");
+      }
     }
 
-    if (result?.error) {
-      throw new Error(result.error);
-    }
+    setLoading(false);
+  };
 
-    if (!result?.output && !result?.statusCode) {
-      console.error("Invalid response structure:", result);
-      throw new Error("Invalid response format from server");
-    }
+  return (
+    <div
+      className={`flex items-center justify-center min-h-screen ${
+        isDarkMode ? "bg-gray-800" : "bg-gray-100"
+      }`}
+    >
+      <div
+        className={`max-w-xl mx-auto p-6 ${
+          isDarkMode ? "bg-gray-900 text-white" : "bg-white text-gray-800"
+        } rounded-lg shadow-lg space-y-6 w-full`}
+      >
+        <h2
+          className={`text-2xl font-semibold ${
+            isDarkMode ? "text-white" : "text-gray-900"
+          }`}
+        >
+          AI Search
+        </h2>
 
-    return result.output || result;
-  } catch (error) {
-    console.error("[AI Service] Complete Error:", {
-      message: error.message,
-      request: error.config?.data,
-      response: error.response?.data,
-      stack: error.stack,
-    });
+        <input
+          type="text"
+          value={inputText}
+          onChange={(e) => setInputText(e.target.value)}
+          placeholder="Ask something..."
+          className={`w-full p-3 rounded border ${
+            isDarkMode
+              ? "bg-gray-700 text-white border-gray-600 focus:ring-2 focus:ring-blue-400"
+              : "bg-gray-100 text-gray-800 border-gray-300 focus:ring-2 focus:ring-blue-400"
+          } focus:outline-none`}
+        />
 
-    throw new Error(
-      error.response?.data?.error || error.message || "AI service unavailable"
-    );
-  }
+        <button
+          onClick={handleSearch}
+          className={`px-6 py-2 rounded transition-all duration-200 ${
+            isDarkMode
+              ? "bg-blue-600 hover:bg-blue-700 text-white"
+              : "bg-blue-600 hover:bg-blue-700 text-white"
+          }`}
+          disabled={loading}
+        >
+          {loading ? "Thinking..." : "Search"}
+        </button>
+
+        {error && <p className="text-red-500 text-sm">{error}</p>}
+
+        {responseText && (
+          <div
+            className={`mt-4 p-4 rounded shadow-sm ${
+              isDarkMode
+                ? "bg-gray-700 text-white"
+                : "bg-gray-100 text-gray-900"
+            }`}
+          >
+            <h4 className="text-lg font-semibold mb-2">AI Response:</h4>
+            <p>{responseText}</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
 };
+
+export default AiSearch;

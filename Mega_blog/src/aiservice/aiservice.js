@@ -4,18 +4,15 @@ import conf from "../conf/conf.js";
 export const getAiResponse = async (inputText) => {
   console.log("[AI Service] Initiating request with:", inputText);
 
-  // Validate input
   if (!inputText || (typeof inputText !== 'string' && typeof inputText !== 'object')) {
     throw new Error("Input must be a string or object");
   }
 
   try {
-    // Create properly formatted payload
     const payload = {
       inputText: typeof inputText === 'string' ? inputText : JSON.stringify(inputText)
     };
 
-    // Stringify the entire payload for Appwrite
     const requestBody = JSON.stringify({ data: JSON.stringify(payload) });
 
     console.debug("[AI Service] Final request body:", requestBody);
@@ -23,34 +20,32 @@ export const getAiResponse = async (inputText) => {
     const response = await axios({
       method: 'post',
       url: `${conf.appwriteUrl}/functions/${conf.appwriteFunctionId}/executions`,
-      data: requestBody,
+      data: new URLSearchParams({
+        body: requestBody
+      }),
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/x-www-form-urlencoded',
         'X-Appwrite-Project': conf.appwriteProjectId,
-       
       },
       timeout: 30000
     });
 
     console.debug("[AI Service] Full response:", response);
 
-    // Handle empty response
     if (!response.data) {
       throw new Error("Empty response from server");
     }
 
-    // Parse nested response
     let result;
     try {
-      result = response.data.response ? 
-               JSON.parse(response.data.response) : 
-               response.data;
+      result = response.data.response ?
+        JSON.parse(response.data.response) :
+        response.data;
     } catch (e) {
       console.warn("Response parsing warning:", e);
       result = response.data;
     }
 
-    // Validate response structure
     if (result?.error) {
       throw new Error(result.error);
     }
@@ -71,8 +66,8 @@ export const getAiResponse = async (inputText) => {
     });
 
     throw new Error(
-      error.response?.data?.error || 
-      error.message || 
+      error.response?.data?.error ||
+      error.message ||
       "AI service unavailable"
     );
   }
