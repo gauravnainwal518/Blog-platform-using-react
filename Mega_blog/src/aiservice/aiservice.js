@@ -5,14 +5,14 @@ export const getAiResponse = async (inputText) => {
   console.log("[AI Service] Sending to AI:", inputText);
 
   try {
-    // Structure the input properly
-    const requestData = typeof inputText === 'string' 
-      ? { inputText } 
-      : inputText;
+    // Ensure proper request formatting
+    const requestData = {
+      inputText: typeof inputText === 'string' ? inputText : JSON.stringify(inputText)
+    };
 
     const response = await axios.post(
       `${conf.appwriteUrl}/functions/${conf.appwriteFunctionId}/executions`,
-      requestData, // No need for JSON.stringify - axios handles it
+      requestData, // axios will automatically stringify this
       {
         headers: {
           'X-Appwrite-Project': conf.appwriteProjectId,
@@ -21,26 +21,26 @@ export const getAiResponse = async (inputText) => {
       }
     );
 
-    // Handle response format
-    if (response.data?.statusCode !== 200) {
-      throw new Error(response.data?.error || "AI service error");
+    // Handle both success and error responses from Appwrite
+    if (response.data && response.data.statusCode !== 200) {
+      throw new Error(response.data.error || "AI service returned an error");
     }
 
-    return response.data.output;
+    return response.data?.output || response.data?.response;
 
   } catch (error) {
-    console.error("[AI Service] Error:", {
+    console.error("[AI Service] Detailed Error:", {
       message: error.message,
       response: error.response?.data,
       status: error.response?.status
     });
 
+    // More specific error messages
     let errorMessage = "AI request failed";
-    if (error.response) {
-      errorMessage = error.response.data?.error || 
-                   `Server error: ${error.response.status}`;
-    } else if (error.request) {
-      errorMessage = "No response from server";
+    if (error.response?.data?.error) {
+      errorMessage = error.response.data.error;
+    } else if (error.message) {
+      errorMessage = error.message;
     }
 
     throw new Error(errorMessage);
