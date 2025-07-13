@@ -15,8 +15,6 @@ export const getAiResponse = async (inputText) => {
 
     const requestBody = JSON.stringify({ data: JSON.stringify(payload) });
 
-    console.debug("[AI Service] Final request body:", requestBody);
-
     const response = await axios({
       method: 'post',
       url: `${conf.appwriteUrl}/functions/${conf.appwriteFunctionId}/executions`,
@@ -30,20 +28,17 @@ export const getAiResponse = async (inputText) => {
       timeout: 30000
     });
 
-    console.debug("[AI Service] Full response:", response);
-
-    if (!response.data) {
-      throw new Error("Empty response from server");
-    }
-
+    //  Correct parsing of Appwrite execution wrapper
     let result;
     try {
-      result = response.data.response ?
-        JSON.parse(response.data.response) :
-        response.data;
+      if (response.data?.response) {
+        result = JSON.parse(response.data.response); // Parse your function's res.json()
+      } else {
+        result = response.data;
+      }
     } catch (e) {
-      console.warn("Response parsing warning:", e);
-      result = response.data;
+      console.warn(" Response parsing failed:", e);
+      result = {};
     }
 
     if (result?.error) {
