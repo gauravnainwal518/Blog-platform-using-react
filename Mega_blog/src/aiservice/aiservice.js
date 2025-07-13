@@ -4,6 +4,8 @@ import conf from "../conf/conf.js";
 const appwriteFunctionUrl = `${conf.appwriteUrl}/functions/${conf.appwriteFunctionId}/executions`;
 
 export const getAiResponse = async (inputText) => {
+  console.log("InputText received in service:", inputText); // debug log
+
   if (!inputText || typeof inputText !== "string" || inputText.trim() === "") {
     throw new Error("Invalid inputText");
   }
@@ -20,7 +22,7 @@ export const getAiResponse = async (inputText) => {
       }
     );
 
-    console.log(" Raw Response from Appwrite:", response);
+    console.log("Raw Response from Appwrite:", response);
 
     const rawString = response?.data?.response;
 
@@ -32,7 +34,7 @@ export const getAiResponse = async (inputText) => {
     try {
       parsed = JSON.parse(rawString);
     } catch (err) {
-      console.error(" Failed to parse function response:", rawString);
+      console.error("Failed to parse function response:", rawString);
       throw new Error("Could not parse Appwrite Function response.");
     }
 
@@ -45,7 +47,7 @@ export const getAiResponse = async (inputText) => {
     return output;
 
   } catch (error) {
-    console.error(" AI Service Error:", error.message);
+    console.error("AI Service Error:", error.message);
     throw error;
   }
 };

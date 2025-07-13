@@ -20,6 +20,8 @@ const AiSearch = () => {
       return;
     }
 
+    console.log("Sending to AI:", inputText); // debug log
+
     setLoading(true);
     setError("");
     setResponseText("");
