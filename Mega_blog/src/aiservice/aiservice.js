@@ -9,11 +9,13 @@ export const getAiResponse = async (inputText) => {
   try {
     const response = await axios.post(
       appwriteFunctionUrl,
-      JSON.stringify({ inputText }), //  Send raw JSON string
+      "", // send empty body
       {
         headers: {
           'X-Appwrite-Project': conf.appwriteProjectId,
           'Content-Type': 'application/json',
+          //  SEND inputText as variable
+          'x-appwrite-function-variables': JSON.stringify({ inputText }),
         },
       }
     );
