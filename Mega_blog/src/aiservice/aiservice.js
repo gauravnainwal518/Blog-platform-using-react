@@ -1,3 +1,4 @@
+
 import axios from 'axios';
 import conf from "../conf/conf.js";
 
@@ -6,13 +7,13 @@ export const getAiResponse = async (inputText) => {
     throw new Error("Input must be a non-empty string");
   }
 
-  try {
-    const body = new URLSearchParams();
-    body.append("body", JSON.stringify({ inputText }));
+  const body = new URLSearchParams();
+  body.append("data", JSON.stringify({ inputText })); // this is important
 
+  try {
     const response = await axios.post(
       `${conf.appwriteUrl}/functions/${conf.appwriteFunctionId}/executions`,
-      body,
+      body.toString(), //  ensures it's sent correctly
       {
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
