@@ -13,16 +13,15 @@ export const getAiResponse = async (inputText) => {
       inputText: typeof inputText === 'string' ? inputText : JSON.stringify(inputText)
     };
 
-    const requestBody = new URLSearchParams({
-      data: JSON.stringify(payload)
-    });
+    // Directly stringify payload instead of using URLSearchParams
+    const requestBody = JSON.stringify({ data: JSON.stringify(payload) });
 
     const response = await axios({
       method: 'post',
       url: `${conf.appwriteUrl}/functions/${conf.appwriteFunctionId}/executions`,
       data: requestBody,
       headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
+        'Content-Type': 'application/json', //  Important: set correct content type
         'X-Appwrite-Project': conf.appwriteProjectId,
       },
       timeout: 30000
