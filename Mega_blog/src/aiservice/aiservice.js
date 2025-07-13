@@ -2,39 +2,39 @@ import axios from 'axios';
 import conf from "../conf/conf.js";
 
 export const getAiResponse = async (inputText) => {
-  console.log("[AI Service] Preparing request with input:", inputText);
+  console.log("[AI Service] Initiating request with:", inputText);
 
   // Validate input
-  if (!inputText) {
-    throw new Error("Input text cannot be empty");
+  if (!inputText || (typeof inputText !== 'string' && typeof inputText !== 'object')) {
+    throw new Error("Input must be a string or object");
   }
 
   try {
-    // Structure payload according to Appwrite Function requirements
+    // Create properly formatted payload
     const payload = {
-      data: JSON.stringify({
-        inputText: typeof inputText === 'string' ? inputText : JSON.stringify(inputText)
-      })
+      inputText: typeof inputText === 'string' ? inputText : JSON.stringify(inputText)
     };
 
-    console.debug("[AI Service] Request payload:", payload);
+    // Stringify the entire payload for Appwrite
+    const requestBody = JSON.stringify({ data: JSON.stringify(payload) });
 
-    const response = await axios.post(
-      `${conf.appwriteUrl}/functions/${conf.appwriteFunctionId}/executions`,
-      payload,
-      {
-        headers: {
-          'X-Appwrite-Project': conf.appwriteProjectId,
-          'Content-Type': 'application/json',
-          'X-Appwrite-Key': conf.appwriteApiKey // Ensure this is in your conf.js
-        },
-        timeout: 30000 // 30 second timeout
-      }
-    );
+    console.debug("[AI Service] Final request body:", requestBody);
 
-    console.debug("[AI Service] Raw response:", response);
+    const response = await axios({
+      method: 'post',
+      url: `${conf.appwriteUrl}/functions/${conf.appwriteFunctionId}/executions`,
+      data: requestBody,
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Appwrite-Project': conf.appwriteProjectId,
+       
+      },
+      timeout: 30000
+    });
 
-    // Handle Appwrite function response structure
+    console.debug("[AI Service] Full response:", response);
+
+    // Handle empty response
     if (!response.data) {
       throw new Error("Empty response from server");
     }
@@ -42,45 +42,38 @@ export const getAiResponse = async (inputText) => {
     // Parse nested response
     let result;
     try {
-      result = typeof response.data === 'string' ? 
-                JSON.parse(response.data) : 
-                response.data;
-      
-      if (result.response) {
-        result = JSON.parse(result.response);
-      }
+      result = response.data.response ? 
+               JSON.parse(response.data.response) : 
+               response.data;
     } catch (e) {
-      console.warn("[AI Service] Response parsing warning:", e);
+      console.warn("Response parsing warning:", e);
       result = response.data;
     }
 
-    // Check for errors in response
-    if (result.error) {
+    // Validate response structure
+    if (result?.error) {
       throw new Error(result.error);
     }
 
-    if (!result.output && !result.statusCode) {
-      throw new Error("Malformed response structure");
+    if (!result?.output && !result?.statusCode) {
+      console.error("Invalid response structure:", result);
+      throw new Error("Invalid response format from server");
     }
 
     return result.output || result;
 
   } catch (error) {
-    console.error("[AI Service] Full Error Details:", {
+    console.error("[AI Service] Complete Error:", {
       message: error.message,
       request: error.config?.data,
       response: error.response?.data,
       stack: error.stack
     });
 
-    let errorMessage = "AI request failed";
-    if (error.response) {
-      errorMessage = error.response.data?.error || 
-                   `Server responded with ${error.response.status}`;
-    } else if (error.code === 'ECONNABORTED') {
-      errorMessage = "Request timeout - try again later";
-    }
-
-    throw new Error(errorMessage);
+    throw new Error(
+      error.response?.data?.error || 
+      error.message || 
+      "AI service unavailable"
+    );
   }
 };
