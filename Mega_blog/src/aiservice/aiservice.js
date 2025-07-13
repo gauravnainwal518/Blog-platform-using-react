@@ -9,7 +9,7 @@ export const getAiResponse = async (inputText) => {
   try {
     const response = await axios.post(
       appwriteFunctionUrl,
-      { inputText },
+      JSON.stringify(inputText), // Send as raw string
       {
         headers: {
           'X-Appwrite-Project': conf.appwriteProjectId,
@@ -18,26 +18,24 @@ export const getAiResponse = async (inputText) => {
       }
     );
 
-    console.log("Raw Response from Appwrite:", response);
+    console.log("Raw Response from Appwrite:", response.data);
 
-    //  Appwrite wraps actual response inside `response` field (as string)
-    const wrapped = response?.data?.response;
-
-    if (!wrapped) {
-      throw new Error("Appwrite Function returned empty response");
+    // Handle both direct response and wrapped response cases
+    const responseData = response.data?.response || response.data;
+    
+    if (typeof responseData === 'string') {
+      try {
+        const parsed = JSON.parse(responseData);
+        return parsed?.output || parsed;
+      } catch {
+        return responseData; // Return as-is if not JSON
+      }
     }
 
-    //  Unwrap stringified JSON
-    const parsed = JSON.parse(wrapped);
-
-    if (!parsed?.output) {
-      throw new Error("Parsed response missing 'output' field");
-    }
-
-    return parsed.output;
+    return responseData?.output || responseData;
 
   } catch (error) {
     console.error("AI Service Error:", error.message);
-    throw error;
+    throw new Error(`AI Service failed: ${error.message}`);
   }
 };
