@@ -2,60 +2,44 @@ import axios from 'axios';
 import conf from "../conf/conf.js";
 
 export const getAiResponse = async (inputText) => {
-  console.log("[AI Service] Initiating request with:", inputText);
-
   if (!inputText || typeof inputText !== 'string') {
     throw new Error("Input must be a non-empty string");
   }
 
   try {
-    // Form-encoded body exactly as Appwrite expects
-    const encodedBody = new URLSearchParams();
-    encodedBody.append("body", JSON.stringify({ inputText }));
+    const body = new URLSearchParams();
+    body.append("body", JSON.stringify({ inputText }));
 
-    const response = await axios({
-      method: 'post',
-      url: `${conf.appwriteUrl}/functions/${conf.appwriteFunctionId}/executions`,
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'X-Appwrite-Project': conf.appwriteProjectId,
-      },
-      data: encodedBody,
-      timeout: 30000,
-    });
+    const response = await axios.post(
+      `${conf.appwriteUrl}/functions/${conf.appwriteFunctionId}/executions`,
+      body,
+      {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'X-Appwrite-Project': conf.appwriteProjectId,
+        },
+      }
+    );
 
     const execution = response.data;
 
     if (!execution || typeof execution.response !== 'string') {
-      console.error("Invalid Appwrite execution response:", execution);
-      throw new Error("Invalid response format from server");
+      console.error(" Invalid Appwrite execution response:", execution);
+      throw new Error("Invalid response format from Appwrite function");
     }
 
-    let parsed;
+    let parsedResponse;
     try {
-      parsed = JSON.parse(execution.response);
+      parsedResponse = JSON.parse(execution.response);
     } catch (err) {
-      console.error("Failed to parse Appwrite function response:", err);
-      throw new Error("Unable to parse AI server response");
+      throw new Error(" Cannot parse response from AI function");
     }
 
-    if (parsed.error) throw new Error(parsed.error);
-    if (!parsed.output) throw new Error("AI response is empty");
+    if (parsedResponse.error) throw new Error(parsedResponse.error);
+    return parsedResponse.output || "No response received";
 
-    return parsed.output;
-
-  } catch (error) {
-    console.error("[AI Service] Complete Error:", {
-      message: error.message,
-      request: error.config?.data,
-      response: error.response?.data,
-      stack: error.stack,
-    });
-
-    throw new Error(
-      error.response?.data?.error ||
-      error.message ||
-      "AI service unavailable"
-    );
+  } catch (err) {
+    console.error(" AI Service Error:", err);
+    throw new Error(err.message || "Something went wrong");
   }
 };
