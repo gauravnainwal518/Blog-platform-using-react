@@ -4,7 +4,7 @@ import conf from "../conf/conf.js";
 const appwriteFunctionUrl = `${conf.appwriteUrl}/functions/${conf.appwriteFunctionId}/executions`;
 
 export const getAiResponse = async (inputText) => {
-  console.log("InputText received in service:", inputText); // debug log
+  console.log("InputText received in service:", inputText);
 
   if (!inputText || typeof inputText !== "string" || inputText.trim() === "") {
     throw new Error("Invalid inputText");
@@ -13,7 +13,10 @@ export const getAiResponse = async (inputText) => {
   try {
     const response = await axios.post(
       appwriteFunctionUrl,
-      JSON.stringify({ inputText }),
+      {
+        data: JSON.stringify({ inputText }), // 👈 required by Appwrite
+        async: false
+      },
       {
         headers: {
           'X-Appwrite-Project': conf.appwriteProjectId,
@@ -39,10 +42,7 @@ export const getAiResponse = async (inputText) => {
     }
 
     const output = parsed?.output;
-
-    if (!output) {
-      throw new Error("Parsed response missing output field.");
-    }
+    if (!output) throw new Error("Parsed response missing output field.");
 
     return output;
 
