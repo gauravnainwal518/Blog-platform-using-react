@@ -12,24 +12,24 @@ const AiSearch = () => {
   const isDarkMode = useSelector((state) => state.theme.isDarkMode);
 
   const handleSearch = async () => {
-    if (!inputText.trim()) return;
+    if (!inputText.trim()) {
+      toast.warn("Please enter a question or topic before searching.", {
+        position: "top-center",
+        autoClose: 3000,
+      });
+      return;
+    }
 
     setLoading(true);
     setError("");
     setResponseText("");
 
     try {
-      const result = await getAiResponse(inputText);
-
-      if (result && result.output) {
-        setResponseText(result.output);
-      } else {
-        setError("No response received from AI.");
-      }
+      const output = await getAiResponse(inputText);
+      setResponseText(output);
     } catch (err) {
       console.error(err);
 
-      // If Gemini Flash server is overloaded
       if (err?.response?.data?.error?.status === "UNAVAILABLE") {
         toast.error(
           "Gemini Flash server is busy. Please try again in a few seconds.",
