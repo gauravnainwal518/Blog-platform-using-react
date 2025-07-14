@@ -15,7 +15,7 @@ import EditPost from "./Pages/EditPost.jsx";
 import Post from "./Pages/Post.jsx";
 import AllPosts from "./Pages/AllPosts";
 import AiSearch from "./Pages/aisearch.jsx";
-import Dashboard from "./pages/Dashboard.jsx";
+import Dashboard from "./Pages/Dashboard.jsx";
 import Drafts from "./Pages/Drafts.jsx";
 
 import Verify from "./Pages/Verify.jsx";
