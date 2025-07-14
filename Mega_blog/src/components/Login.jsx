@@ -6,7 +6,6 @@ import authService from "../appwrite/auth";
 import { login as authLogin } from "../store/authSlice";
 import { setPosts } from "../store/postSlice";
 import { useForm } from "react-hook-form";
-import { toast } from "react-toastify";
 
 function Login() {
   const navigate = useNavigate();
@@ -32,16 +31,14 @@ function Login() {
         if (!user.emailVerification) {
           setIsEmailNotVerified(true);
           await authService.sendVerificationEmail();
-          toast.info("Verification email sent. Please check your inbox.");
         } else {
           dispatch(authLogin({ userData: user }));
           dispatch(setPosts(posts));
-          toast.success("Logged in successfully!");
           navigate("/");
         }
       }
     } catch (error) {
-      toast.error(error.message || "Login failed. Please try again.");
+      console.error(error.message || "Login failed.");
     } finally {
       setIsLoading(false);
     }
@@ -49,66 +46,48 @@ function Login() {
 
   const handleResendVerification = async () => {
     try {
-      toast.info("Sending verification email...");
       await authService.sendVerificationEmail();
-      toast.success("Verification email resent successfully!");
     } catch (error) {
-      toast.error("Failed to resend verification email.");
+      console.error("Failed to resend verification email.");
     }
   };
 
   const handleForgotPassword = async () => {
     try {
-      const email = prompt("Please enter your email for password recovery:");
+      const email = prompt("Enter your email for password recovery:");
       if (!email) return;
-
       await authService.sendRecoveryEmail(email);
-      toast.success("Password reset email sent!");
     } catch (error) {
-      toast.error("Failed to send password reset email.");
+      console.error("Failed to send password reset email.");
     }
   };
 
   return (
     <div
-      className={`flex items-center justify-center min-h-screen px-4 ${
-        isDarkMode ? "bg-gray-900" : "bg-white"
+      className={`flex items-center justify-center min-h-screen px-4 transition-all duration-300 ${
+        isDarkMode ? "bg-gray-900 text-white" : "bg-gray-50 text-gray-900"
       }`}
     >
       <div
-        className={`w-full max-w-md rounded-xl p-10 shadow-2xl border transition-all hover:scale-105 hover:shadow-3xl ${
+        className={`w-full max-w-md rounded-xl p-10 shadow-2xl border transition-all duration-300 hover:shadow-3xl ${
           isDarkMode
-            ? "bg-gray-800 border-gray-700 text-white"
-            : "bg-white border-gray-300 text-gray-800"
+            ? "bg-gray-800 border-gray-700"
+            : "bg-white border-gray-200"
         }`}
       >
         <div className="mb-6 flex justify-center">
           <img src="/typenest.png" alt="Logo" className="w-28 h-auto" />
         </div>
-        <h2
-          className={`text-center text-3xl font-extrabold mb-4 ${
-            isDarkMode ? "text-white" : "text-gray-800"
-          }`}
-        >
-          Sign in to your account
-        </h2>
-        <p
-          className={`mt-2 text-center ${
-            isDarkMode ? "text-gray-400" : "text-gray-600"
-          }`}
-        >
-          Don&apos;t have an account?{" "}
-          <Link
-            to="/signup"
-            className="text-purple-600 hover:underline font-medium"
-          >
+        <h2 className="text-center text-3xl font-bold mb-2">Welcome Back</h2>
+        <p className="text-center text-sm mb-4">
+          Don’t have an account?
+          <Link to="/signup" className="text-purple-600 hover:underline ml-1">
             Sign Up
           </Link>
         </p>
 
-        {/* Email not verified message */}
         {isEmailNotVerified && (
-          <div className="bg-yellow-100 text-yellow-800 p-3 rounded-md mt-4 text-center">
+          <div className="bg-yellow-100 text-yellow-800 p-3 rounded-md text-sm text-center">
             Your email is not verified. Please check your inbox.
             <div className="mt-2">
               <Button
@@ -121,11 +100,10 @@ function Login() {
           </div>
         )}
 
-        {/* Login Form */}
-        <form onSubmit={handleSubmit(login)} className="mt-6 space-y-6">
+        <form onSubmit={handleSubmit(login)} className="mt-6 space-y-5">
           <div className="space-y-4">
             <Input
-              label="Email:"
+              label="Email"
               placeholder="Enter your email"
               type="email"
               {...register("email", {
@@ -135,18 +113,13 @@ function Login() {
                   message: "Enter a valid email address",
                 },
               })}
-              className={`p-4 rounded-lg border-2 focus:outline-none focus:border-purple-500 ${
-                isDarkMode
-                  ? "bg-gray-700 text-white placeholder-gray-400"
-                  : "bg-white text-gray-900 placeholder-gray-500"
-              }`}
             />
             {errors.email && (
               <p className="text-red-600 text-sm">{errors.email.message}</p>
             )}
 
             <Input
-              label="Password:"
+              label="Password"
               type="password"
               placeholder="Enter your password"
               {...register("password", {
@@ -156,11 +129,6 @@ function Login() {
                   message: "Password must be at least 6 characters",
                 },
               })}
-              className={`p-4 rounded-lg border-2 focus:outline-none focus:border-purple-500 ${
-                isDarkMode
-                  ? "bg-gray-700 text-white placeholder-gray-400"
-                  : "bg-white text-gray-900 placeholder-gray-500"
-              }`}
             />
             {errors.password && (
               <p className="text-red-600 text-sm">{errors.password.message}</p>
@@ -170,7 +138,7 @@ function Login() {
           <div className="flex flex-col items-center space-y-3">
             <Button
               type="submit"
-              className="w-full text-lg py-3 bg-purple-600 text-white rounded-lg"
+              className="w-full py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg"
               disabled={isLoading}
             >
               {isLoading ? "Logging in..." : "Log In"}
@@ -178,7 +146,7 @@ function Login() {
             <button
               type="button"
               onClick={handleForgotPassword}
-              className="text-sm font-medium text-purple-600 hover:underline"
+              className="text-sm text-purple-600 hover:underline"
             >
               Forgot Password?
             </button>

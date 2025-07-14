@@ -1,164 +1,151 @@
-import React, { useCallback, useEffect } from "react";
+import React, { useCallback, useEffect, useRef } from "react";
 import dayjs from "dayjs";
-
 import { useForm } from "react-hook-form";
-import { Input, Select, RTE, Button } from "../../components/index";
+import { Input, RTE, Button } from "../../components/index";
 import appwriteService from "../../appwrite/config";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 
 function PostForm({ post }) {
-  const { register, handleSubmit, watch, setValue, control, getValues } =
-    useForm({
-      defaultValues: {
-        title: post?.title || "",
-        slug: post?.slug || "",
-        content: post?.content || "",
-        status: post?.status || "active",
-      },
-    });
+  const {
+    register,
+    handleSubmit,
+    watch,
+    setValue,
+    control,
+    getValues,
+    trigger,
+  } = useForm({
+    defaultValues: {
+      title: post?.title || "",
+      slug: post?.slug || "",
+      content: post?.content || "",
+    },
+  });
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const userData = useSelector((state) => state.auth.userData);
-
   const isDarkMode = useSelector((state) => state.theme.isDarkMode);
+  const autoSaveTimer = useRef(null);
 
-  const submit = async (data) => {
+  const savePost = async (data, status = "inactive", isAutoSave = false) => {
     try {
-      const now = dayjs().toISOString(); // Current ISO timestamp
-
+      const now = dayjs().toISOString();
       if (post) {
         const updatedData = {
           title: data.title,
           slug: data.slug,
           content: data.content,
-          status: data.status,
-          updatedAt: now, // timestamp on update
+          status,
+          updatedAt: now,
         };
-
         if (data.image && data.image.length > 0) {
           const file = await appwriteService.uploadFile(data.image[0]);
-          if (file) {
-            updatedData.featuredImageFile = file.$id;
-          }
+          if (file) updatedData.featuredImageFile = file.$id;
         } else {
           updatedData.featuredImageFile =
             post.featuredImage || "default_image_id";
         }
-
         const response = await appwriteService.updatePost(
           post.$id,
           updatedData
         );
-        if (response) {
+        if (response && !isAutoSave) {
           navigate(`/post/${post.$id}`);
-          dispatch({
-            type: "posts/updatePost",
-            payload: response,
-          });
+          dispatch({ type: "posts/updatePost", payload: response });
         }
       } else {
         if (!data.image || data.image.length === 0) {
-          alert("Please upload a featured image.");
+          if (!isAutoSave) alert("Please upload a featured image.");
           return;
         }
-
         const file = await appwriteService.uploadFile(data.image[0]);
         if (!file) {
-          alert("Image upload failed. Please try again.");
+          if (!isAutoSave) alert("Image upload failed.");
           return;
         }
-
         const dbPost = await appwriteService.createPost({
           title: data.title,
           slug: data.slug,
           content: data.content,
-          status: data.status,
+          status,
           featuredImageFile: file.$id || "default_image_id",
           userId: userData.$id,
           createdAt: now,
           updatedAt: now,
         });
-
-        if (dbPost) {
+        if (dbPost && !isAutoSave) {
           navigate(`/post/${dbPost.$id}`);
-          dispatch({
-            type: "posts/addPost",
-            payload: dbPost,
-          });
+          dispatch({ type: "posts/addPost", payload: dbPost });
         }
       }
     } catch (error) {
-      console.error("Error submitting post:", error);
-      alert("An error occurred while processing your post. Please try again.");
+      console.error("Error saving post:", error);
+      if (!isAutoSave) alert("An error occurred. Please try again.");
     }
   };
 
+  const submit = (data) => savePost(data, "active");
+  const saveAsDraft = (data) => savePost(data, "inactive");
+
   const slugTransform = useCallback((value) => {
-    if (value && typeof value === "string") {
-      return value
-        .trim()
+    return (
+      value
+        ?.trim()
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, "-")
-        .replace(/^-+|-+$/g, "");
-    }
-    return "";
+        .replace(/^-+|-+$/g, "") || ""
+    );
   }, []);
 
   useEffect(() => {
     const subscription = watch((value, { name }) => {
       if (name === "title") {
-        setValue("slug", slugTransform(value.title), {
-          shouldValidate: true,
-        });
+        setValue("slug", slugTransform(value.title), { shouldValidate: true });
       }
+      if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current);
+      autoSaveTimer.current = setTimeout(async () => {
+        const formData = getValues();
+        const isValid = await trigger(["title", "slug", "content"]);
+        if (isValid) await savePost(formData, "inactive", true);
+      }, 30000);
     });
-
     return () => subscription.unsubscribe();
-  }, [watch, slugTransform, setValue]);
+  }, [watch, setValue, slugTransform, getValues, trigger]);
 
   return (
     <form
       onSubmit={handleSubmit(submit)}
-      className={`flex flex-wrap gap-4  p-6 shadow-lg transition-all duration-300 ease-in-out w-full min-h-screen ${
-        isDarkMode ? "bg-gray-800 text-white" : "bg-white text-gray-800"
+      className={`flex flex-wrap gap-6 px-6 py-10 transition-all duration-300 min-h-screen w-full rounded-xl shadow-xl ${
+        isDarkMode ? "bg-gray-900 text-white" : "bg-gray-50 text-gray-900"
       }`}
     >
-      <div className="w-full lg:w-2/3 space-y-4">
+      <div className="w-full lg:w-2/3 space-y-6">
         <Input
           label="Title"
-          placeholder="Enter post title"
+          placeholder="Enter your blog title"
           {...register("title", { required: true })}
-          className={`${
-            isDarkMode ? "bg-gray-700 text-gray-300" : "bg-white text-gray-800"
-          }`}
         />
         <Input
           label="Slug"
-          placeholder="Generated slug"
+          placeholder="Auto-generated slug"
           {...register("slug", { required: true })}
           onInput={(e) =>
             setValue("slug", slugTransform(e.currentTarget.value), {
               shouldValidate: true,
             })
           }
-          className={`${
-            isDarkMode ? "bg-gray-700 text-gray-300" : "bg-white text-gray-800"
-          }`}
         />
         <RTE
           label="Content"
           name="content"
           control={control}
           defaultValue={getValues("content")}
-          className={`${
-            isDarkMode ? "bg-gray-700 text-gray-300" : "bg-white text-gray-800"
-          }`}
         />
       </div>
 
-      <div className="w-full lg:w-1/3 space-y-4">
+      <div className="w-full lg:w-1/3 space-y-6">
         <Input
           label="Featured Image"
           type="file"
@@ -166,13 +153,9 @@ function PostForm({ post }) {
           {...register("image", {
             required: !post ? "Featured image is required" : false,
           })}
-          className={`${
-            isDarkMode ? "bg-gray-700 text-gray-300" : "bg-white text-gray-800"
-          }`}
         />
-
-        {post && post.featuredImage && (
-          <div className="rounded-lg overflow-hidden border border-gray-200">
+        {post?.featuredImage && (
+          <div className="rounded-lg overflow-hidden border">
             <img
               src={appwriteService.getFilePreview(post.featuredImage)}
               alt={post.title}
@@ -180,23 +163,22 @@ function PostForm({ post }) {
             />
           </div>
         )}
-
-        <Select
-          options={["active", "inactive"]}
-          label="Status"
-          {...register("status", { required: true })}
-          className={`${
-            isDarkMode ? "bg-gray-700 text-gray-300" : "bg-white text-gray-800"
-          }`}
-        />
-
         <Button
           type="submit"
           className={`w-full py-3 ${
             isDarkMode ? "bg-green-600" : "bg-green-500"
           }`}
         >
-          {post ? "Update" : "Submit"}
+          {post ? "Update Post" : "Publish Post"}
+        </Button>
+        <Button
+          type="button"
+          className={`w-full py-3 ${
+            isDarkMode ? "bg-yellow-600" : "bg-yellow-500"
+          }`}
+          onClick={handleSubmit(saveAsDraft)}
+        >
+          Save as Draft
         </Button>
       </div>
     </form>

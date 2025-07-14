@@ -1,7 +1,6 @@
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import authService from "../appwrite/auth";
-import { toast } from "react-toastify";
 
 function Verify() {
   const [searchParams] = useSearchParams();
@@ -17,18 +16,15 @@ function Verify() {
         .confirmEmailVerification(userId, secret)
         .then(() => {
           setStatus("Email successfully verified! Redirecting to login...");
-          toast.success("Email successfully verified! Redirecting to login..."); // Success toast
           setTimeout(() => {
             navigate("/login");
           }, 2000);
         })
         .catch(() => {
           setStatus("Verification failed. Please try again.");
-          toast.error("Verification failed. Please try again.");
         });
     } else {
       setStatus("Invalid verification link.");
-      toast.error("Invalid verification link.");
     }
   }, [searchParams, navigate]);
 

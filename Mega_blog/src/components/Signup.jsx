@@ -4,14 +4,16 @@ import { Button, Input } from "./index.js";
 import { useDispatch, useSelector } from "react-redux";
 import { useForm } from "react-hook-form";
 import authService from "../appwrite/auth";
-import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
 
 function Signup() {
   const navigate = useNavigate();
   const [error, setError] = useState("");
   const dispatch = useDispatch();
-  const { register, handleSubmit } = useForm();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm();
 
   const isDarkMode = useSelector((state) => state.theme.isDarkMode);
 
@@ -20,12 +22,12 @@ function Signup() {
     try {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(data.email)) {
-        toast.error("Invalid email format");
+        setError("Invalid email format");
         return;
       }
 
       if (data.password.length < 8) {
-        toast.error("Password is too short. Minimum length is 8 characters.");
+        setError("Password must be at least 8 characters long");
         return;
       }
 
@@ -36,15 +38,12 @@ function Signup() {
       });
 
       if (newUserData.success) {
-        toast.success(newUserData.message || "Account created successfully!");
         navigate("/login");
       } else {
-        toast.error(
-          newUserData.message || "Account creation failed. Try again."
-        );
+        setError(newUserData.message || "Account creation failed. Try again.");
       }
     } catch (error) {
-      toast.error(error.message || "Something went wrong. Please try again.");
+      setError(error.message || "Something went wrong. Please try again.");
     }
   };
 
@@ -54,7 +53,6 @@ function Signup() {
         isDarkMode ? "bg-gray-900" : "bg-white"
       }`}
     >
-      <ToastContainer />
       <div
         className={`w-full max-w-lg rounded-2xl p-10 border shadow-xl transition-transform hover:scale-[1.01] ${
           isDarkMode
@@ -85,6 +83,7 @@ function Signup() {
             Sign In
           </Link>
         </p>
+
         {error && (
           <p className="text-red-600 mt-6 text-center text-sm font-medium">
             {error}
@@ -108,10 +107,9 @@ function Signup() {
             type="email"
             {...register("email", {
               required: "Email is required",
-              validate: {
-                matchPattern: (value) =>
-                  /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/.test(value) ||
-                  "Enter a valid email address",
+              pattern: {
+                value: /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/,
+                message: "Enter a valid email address",
               },
             })}
             className={`rounded-md border px-4 py-2 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-purple-500 ${
@@ -127,8 +125,8 @@ function Signup() {
             {...register("password", {
               required: "Password is required",
               minLength: {
-                value: 6,
-                message: "Password must be at least 6 characters",
+                value: 8,
+                message: "Password must be at least 8 characters",
               },
             })}
             className={`rounded-md border px-4 py-2 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-purple-500 ${

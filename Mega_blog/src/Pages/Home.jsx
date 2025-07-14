@@ -2,95 +2,116 @@ import React, { useState } from "react";
 import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import { PostCard } from "../components";
+import { FiSearch, FiArrowRight } from "react-icons/fi";
 import dayjs from "dayjs";
 
 function Home() {
   const isDarkMode = useSelector((state) => state.theme.isDarkMode);
   const posts = useSelector((state) => state.posts.allPosts);
   const userData = useSelector((state) => state.auth?.userData);
-  const [isHovered, setIsHovered] = useState(true);
 
-  const handleMouseEnter = () => setIsHovered(false);
-  const handleMouseLeave = () => setIsHovered(true);
-  const handleBannerClick = () => {};
+  const [searchQuery, setSearchQuery] = useState("");
+  const [visiblePosts, setVisiblePosts] = useState(8);
+  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [selectedTag, setSelectedTag] = useState("all");
+
+  const uniqueCategories = [
+    ...new Set(posts.map((post) => post.category || "Uncategorized")),
+  ];
+  const uniqueTags = [...new Set(posts.flatMap((post) => post.tags || []))];
+
+  const filteredPosts = posts.filter((post) => {
+    const matchesSearch = post.title
+      ?.toLowerCase()
+      .includes(searchQuery.toLowerCase());
+    const matchesCategory =
+      selectedCategory === "all" || post.category === selectedCategory;
+    const matchesTag =
+      selectedTag === "all" || (post.tags || []).includes(selectedTag);
+    return matchesSearch && matchesCategory && matchesTag;
+  });
 
   return (
     <div
       className={`w-full min-h-screen ${
-        isDarkMode ? "bg-gray-900 text-white" : "bg-white text-gray-800"
+        isDarkMode ? "bg-gray-900 text-white" : "bg-white text-gray-900"
       }`}
     >
-      {/*  1. Welcome Section */}
-      <section className="w-full py-16 text-center px-4 welcome-animation">
-        <div className="max-w-screen-md mx-auto">
-          <h1 className="text-5xl sm:text-6xl font-extrabold mb-6 leading-tight font-playfair">
-            ✍️ Welcome to{" "}
+      {/* Welcome Section */}
+      <section className="w-full py-16 text-center px-4">
+        <div className="max-w-screen-md mx-auto space-y-6">
+          {/* Search Bar */}
+          <div className="relative flex justify-center">
+            <input
+              type="text"
+              placeholder="Search posts..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className={`w-full max-w-xl py-3 px-5 rounded-full shadow-md text-base outline-none transition ${
+                isDarkMode
+                  ? "bg-gray-800 text-white placeholder-gray-400"
+                  : "bg-gray-100 text-gray-800 placeholder-gray-500"
+              }`}
+            />
+            <FiSearch
+              size={22}
+              className={`absolute right-6 top-1/2 transform -translate-y-1/2 ${
+                isDarkMode ? "text-gray-300" : "text-gray-600"
+              }`}
+            />
+          </div>
+
+          <h1 className="text-4xl sm:text-5xl font-extrabold font-playfair">
+            Welcome to{" "}
             <span className="text-blue-600 dark:text-blue-400">TypeNest</span>
           </h1>
-          <p className="text-xl sm:text-2xl mb-8 font-lora dark:text-gray-300 text-gray-800">
-            Unleash your creativity, share your knowledge, and inspire the world
-            one blog at a time 🚀
+          <p className="text-lg sm:text-xl font-lora text-gray-600 dark:text-gray-300">
+            Unleash your creativity, share your knowledge, and inspire the
+            world—one blog at a time.
           </p>
-          <a
-            href="/add-post"
-            className="inline-block bg-blue-600 hover:bg-blue-700 text-white text-lg font-semibold py-3 px-6 rounded-full shadow-lg transition duration-300"
+
+          <Link
+            to="/add-post"
+            className="inline-flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white font-semibold text-lg px-6 py-3 rounded-full shadow-lg transition duration-300"
           >
-            🚀 Get Started
-          </a>
+            Get Started <FiArrowRight className="ml-2" />
+          </Link>
         </div>
       </section>
 
-      {/*   Main Banner Section */}
-      <section className="w-full">
-        <div className="max-w-screen-2xl mx-auto px-4 py-6">
-          <div
-            className={`w-full h-[60vh] flex items-center justify-center overflow-hidden rounded-xl shadow-lg transform transition-all duration-500 animate-zoom-in ${
-              isHovered ? "hover:scale-105 hover:shadow-2xl" : ""
-            } cursor-pointer active:scale-95`}
-            onClick={handleBannerClick}
-            onMouseEnter={handleMouseEnter}
-            onMouseLeave={handleMouseLeave}
+      {/* Filters Section */}
+      <section className="px-4 max-w-screen-xl mx-auto mb-10">
+        <div className="flex flex-wrap gap-4 justify-center">
+          <select
+            value={selectedCategory}
+            onChange={(e) => setSelectedCategory(e.target.value)}
+            className="px-4 py-2 rounded-md border dark:bg-gray-800 dark:text-white"
           >
-            <img
-              src="/banner.png"
-              alt="Banner"
-              className="max-h-full max-w-full object-cover"
-            />
-          </div>
+            <option value="all">All Categories</option>
+            {uniqueCategories.map((cat) => (
+              <option key={cat} value={cat}>
+                {cat}
+              </option>
+            ))}
+          </select>
+
+          <select
+            value={selectedTag}
+            onChange={(e) => setSelectedTag(e.target.value)}
+            className="px-4 py-2 rounded-md border dark:bg-gray-800 dark:text-white"
+          >
+            <option value="all">All Tags</option>
+            {uniqueTags.map((tag) => (
+              <option key={tag} value={tag}>
+                {tag}
+              </option>
+            ))}
+          </select>
         </div>
       </section>
 
-      {/*  Two Prebuilt Image Banners */}
-      <section className="w-full py-12 px-4">
-        <div className="max-w-screen-xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
-          {/* Write Freely Image */}
-          <div className="rounded-xl overflow-hidden shadow-md transition transform hover:scale-105 hover:shadow-2xl">
-            <img
-              src="/ban1.png"
-              alt="Write Freely"
-              className="w-full h-full object-cover"
-            />
-          </div>
-
-          {/* Inspire the World Image */}
-          <div className="rounded-xl overflow-hidden shadow-md transition transform hover:scale-105 hover:shadow-2xl">
-            <img
-              src="/ban2.png"
-              alt="Inspire the World"
-              className="w-full h-full object-cover"
-            />
-          </div>
-        </div>
-      </section>
-
-      {/*   Posts Section */}
-      <section className="py-12 px-4">
-        {userData && posts.length > 0 && (
-          <h2 className="text-3xl font-bold mb-8 text-center">
-            📰 Recent Posts
-          </h2>
-        )}
-
+      {/* Posts Section */}
+      <section className="py-12 px-4 max-w-screen-xl mx-auto">
         {!userData ? (
           <div className="text-center text-lg font-semibold text-red-500">
             <Link
@@ -100,54 +121,47 @@ function Home() {
               You need to log in to view your posts
             </Link>
           </div>
-        ) : posts.length === 0 ? (
+        ) : filteredPosts.length === 0 ? (
           <div className="text-center">
             <Link
               to="/add-post"
               className="inline-flex items-center text-blue-600 dark:text-blue-400 text-xl font-semibold hover:underline"
             >
-              Let’s start with us <span className="ml-2">→</span>
+              No posts found. Start writing <FiArrowRight className="ml-2" />
             </Link>
           </div>
         ) : (
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 mb-10">
-              {posts.slice(0, 8).map((post) => (
+              {filteredPosts.slice(0, visiblePosts).map((post) => (
                 <div
                   key={post.$id}
-                  className={`w-full p-4 transition-all duration-300 hover:scale-105 hover:shadow-2xl rounded-xl ${
+                  className={`w-full p-4 rounded-xl transition-all duration-300 hover:scale-105 shadow ${
                     isDarkMode
-                      ? "bg-gray-800 hover:bg-gradient-to-r hover:from-purple-700 hover:to-purple-800"
-                      : "bg-white hover:bg-gradient-to-r hover:from-purple-100 hover:to-purple-200"
+                      ? "bg-gray-800 hover:bg-gray-700"
+                      : "bg-white hover:bg-gray-100"
                   }`}
                 >
-                  <PostCard
-                    title={post.title}
-                    content={post.content}
-                    featuredImage={post.featuredImage}
-                    status={post.status}
-                    userId={post.userId}
-                    slug={post.$id}
-                    createdAt={post.createdAt}
-                  />
-                  <div className="mt-2 text-sm text-center">
-                    {/* Fix the date formatting issue here */}
+                  <PostCard {...post} slug={post.$id} />
+                  <p className="text-sm mt-2 text-center text-gray-500 dark:text-gray-400">
                     {post.createdAt
                       ? dayjs(post.createdAt).format("MMM D, YYYY")
                       : "Unknown Date"}
-                  </div>
+                  </p>
                 </div>
               ))}
             </div>
 
-            <div className="text-center">
-              <Link
-                to="/all-posts"
-                className="inline-block bg-blue-600 hover:bg-blue-700 text-white text-lg font-semibold py-3 px-6 rounded-full transition duration-300"
-              >
-                View All Posts →
-              </Link>
-            </div>
+            {visiblePosts < filteredPosts.length && (
+              <div className="text-center">
+                <button
+                  onClick={() => setVisiblePosts((prev) => prev + 8)}
+                  className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-full transition"
+                >
+                  Load More
+                </button>
+              </div>
+            )}
           </>
         )}
       </section>

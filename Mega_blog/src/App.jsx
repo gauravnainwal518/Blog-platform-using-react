@@ -6,17 +6,13 @@ import { clearPosts, setPosts } from "./store/postSlice";
 import { Footer, Header } from "./components";
 import { Outlet } from "react-router-dom";
 import service from "./appwrite/config";
+import Loader from "./components/Loader/loader";
 
 function App() {
   const [loading, setLoading] = useState(true);
   const dispatch = useDispatch();
 
   const isDarkMode = useSelector((state) => state.theme.isDarkMode);
-
-  // Log dark mode value when it changes->error debugging
-  useEffect(() => {
-    // console.log("Is dark mode enabled?", isDarkMode);
-  }, [isDarkMode]);
 
   const fetchPosts = async (userId) => {
     try {
@@ -42,7 +38,6 @@ function App() {
         } else {
           dispatch(logout());
           dispatch(clearPosts());
-          console.log("Posts cleared!");
         }
       } catch (error) {
         console.error("Error during user data fetch:", error);
@@ -63,10 +58,7 @@ function App() {
       <Footer />
     </div>
   ) : (
-    <div className="loading-screen">
-      <div className="spinner"></div>
-      <p>Loading...</p>
-    </div>
+    <Loader /> //
   );
 }
 

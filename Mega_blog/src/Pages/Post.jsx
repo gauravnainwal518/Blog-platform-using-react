@@ -5,12 +5,13 @@ import { Button } from "../components";
 import parse from "html-react-parser";
 import { useSelector } from "react-redux";
 import CommentSection from "../components/commentSection";
+import dayjs from "dayjs";
 
 export default function Post() {
   const [post, setPost] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [likes, setLikes] = useState(0); // State to hold like count
-  const [userHasLiked, setUserHasLiked] = useState(false); // Track if user already liked the post
+  const [likes, setLikes] = useState(0);
+  const [userHasLiked, setUserHasLiked] = useState(false);
   const { slug } = useParams();
   const navigate = useNavigate();
 
@@ -18,39 +19,29 @@ export default function Post() {
   const isDarkMode = useSelector((state) => state.theme.isDarkMode);
 
   const isAuthor =
-    post && userData ? String(post.userId) === String(userData.$id) : false;
+    post && userData && String(post.userId) === String(userData.$id);
 
   const deletePost = () => {
-    if (post) {
-      appwriteService
-        .deletePost(post.$id)
-        .then((status) => {
-          if (status) {
-            if (post.featuredImage) {
-              appwriteService
-                .deleteFile(post.featuredImage)
-                .catch((error) =>
-                  console.error("Error deleting image:", error)
-                );
-            }
-            navigate("/");
-            window.location.reload();
-          }
-        })
-        .catch((error) => console.error("Error deleting post:", error));
-    }
+    if (!post) return;
+    appwriteService.deletePost(post.$id).then((status) => {
+      if (status) {
+        if (post.featuredImage) {
+          appwriteService.deleteFile(post.featuredImage).catch(console.error);
+        }
+        navigate("/");
+        window.location.reload();
+      }
+    });
   };
 
   const handleLike = () => {
-    // Toggle like/unlike based on the current like status
     appwriteService
       .likePost(post.$id, userData.$id)
       .then((updatedPost) => {
-        // Update like count and user like status
-        setLikes(updatedPost.likedBy.length); // Update like count based on likedBy array length
-        setUserHasLiked(updatedPost.likedBy.includes(userData.$id)); // Update like status
+        setLikes(updatedPost.likedBy.length);
+        setUserHasLiked(updatedPost.likedBy.includes(userData.$id));
       })
-      .catch((error) => console.error("Error liking/unliking post:", error));
+      .catch(console.error);
   };
 
   useEffect(() => {
@@ -60,8 +51,8 @@ export default function Post() {
         .then((fetchedPost) => {
           if (fetchedPost) {
             setPost(fetchedPost);
-            setLikes(fetchedPost.likedBy.length || 0); // Set initial like count based on likedBy array length
-            setUserHasLiked(fetchedPost.likedBy.includes(userData.$id)); // Check if the current user has liked the post
+            setLikes(fetchedPost.likedBy.length || 0);
+            setUserHasLiked(fetchedPost.likedBy.includes(userData.$id));
           } else {
             navigate("/");
           }
@@ -73,56 +64,54 @@ export default function Post() {
     }
   }, [slug, navigate, userData]);
 
-  if (isLoading)
+  if (isLoading) {
     return (
       <div
-        className={`min-h-screen flex items-center justify-center text-xl animate-pulse ${
-          isDarkMode ? "bg-gray-800 text-gray-300" : "bg-gray-100 text-gray-600"
+        className={`min-h-screen flex items-center justify-center text-lg font-medium animate-pulse ${
+          isDarkMode ? "bg-gray-900 text-gray-300" : "bg-gray-100 text-gray-600"
         }`}
       >
         Loading...
       </div>
     );
+  }
 
-  if (!post)
+  if (!post) {
     return (
       <div
-        className={`min-h-screen flex items-center justify-center text-xl ${
-          isDarkMode ? "bg-gray-800 text-gray-300" : "bg-gray-100 text-gray-600"
+        className={`min-h-screen flex items-center justify-center text-lg font-medium ${
+          isDarkMode ? "bg-gray-900 text-gray-300" : "bg-gray-100 text-gray-600"
         }`}
       >
-        Post not found
+        Post not found.
       </div>
     );
+  }
 
   return (
     <div
-      className={`min-h-screen mt-0 py-10 ${
-        isDarkMode
-          ? "bg-gray-900 text-white"
-          : "bg-gradient-to-b from-gray-50 to-gray-200"
+      className={`min-h-screen py-10 px-4 ${
+        isDarkMode ? "bg-gray-900 text-white" : "bg-gray-50 text-gray-900"
       }`}
     >
       <div
-        className={`max-w-4xl mx-auto rounded-2xl shadow-lg p-6 md:p-10 transition-all duration-300 ${
+        className={`max-w-4xl mx-auto p-6 md:p-10 rounded-2xl shadow-2xl ${
           isDarkMode ? "bg-gray-800" : "bg-white"
-        }`}
+        } transition-all duration-300`}
       >
         {post.featuredImage && (
-          <div className="w-full mb-8 flex justify-center">
-            <div className="w-full max-w-2xl overflow-hidden rounded-xl shadow-md">
-              <img
-                src={appwriteService.getFilePreview(post.featuredImage)}
-                alt={post.title}
-                className="w-full h-auto max-h-[350px] object-cover object-center"
-              />
-            </div>
+          <div className="w-full mb-8 overflow-hidden rounded-xl">
+            <img
+              src={appwriteService.getFilePreview(post.featuredImage)}
+              alt={post.title}
+              className="w-full h-auto max-h-[400px] object-cover"
+            />
           </div>
         )}
 
-        {/* Author-only buttons */}
+        {/* Author Controls */}
         {isAuthor && (
-          <div className="flex justify-end gap-4 mb-6">
+          <div className="flex justify-end gap-3 mb-6">
             <Link to={`/edit-post/${post.slug}`}>
               <Button bgColor="bg-blue-600 hover:bg-blue-700 text-white">
                 Edit
@@ -138,43 +127,39 @@ export default function Post() {
         )}
 
         {/* Post Title */}
-        <h1
-          className={`text-4xl font-bold mb-6 leading-tight ${
-            isDarkMode ? "text-white" : "text-gray-800"
-          }`}
-        >
-          {post.title}
-        </h1>
+        <h1 className="text-4xl font-bold mb-2">{post.title}</h1>
+        <p className="text-sm text-gray-400 mb-6">
+          {dayjs(post.createdAt).format("MMMM D, YYYY")}
+        </p>
 
-        {/* Post Content */}
-        <div
-          className={`prose prose-lg max-w-none ${
-            isDarkMode ? "text-gray-300" : "text-gray-700"
-          }`}
-        >
+        {/* Content */}
+        <div className="prose prose-lg max-w-none dark:prose-invert">
           {typeof post.content === "string" ? (
             parse(post.content)
           ) : (
-            <p>No Content Available</p>
+            <p>No content available.</p>
           )}
         </div>
 
-        {/* Like Button */}
-        <div className="flex items-center gap-4 mt-6">
+        {/* Likes */}
+        <div className="flex items-center gap-3 mt-8">
           <button
             onClick={handleLike}
-            className={`bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors duration-300 ${
-              userHasLiked ? "bg-red-600" : ""
+            className={`px-4 py-2 rounded-md font-semibold transition-all duration-200 ${
+              userHasLiked
+                ? "bg-red-600 hover:bg-red-700 text-white"
+                : "bg-blue-600 hover:bg-blue-700 text-white"
             }`}
           >
-            {userHasLiked ? "Unlike" : "Like"}{" "}
-            {/* Toggle between Like and Unlike */}
+            {userHasLiked ? "Unlike" : "Like"}
           </button>
-          <span>{likes} Likes</span>
+          <span className="text-sm">
+            {likes} {likes === 1 ? "Like" : "Likes"}
+          </span>
         </div>
 
-        {/* Comment Section */}
-        <div className="mt-8">
+        {/* Comments */}
+        <div className="mt-10 border-t pt-8">
           <CommentSection postId={post.$id} />
         </div>
       </div>

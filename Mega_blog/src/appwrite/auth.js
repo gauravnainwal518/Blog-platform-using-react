@@ -1,6 +1,5 @@
 import conf from '../conf/conf.js';
 import { Client, Account, ID, Databases, Query } from "appwrite";
-import { toast } from 'react-toastify';
 
 export class AuthService {
     client = new Client();
@@ -15,42 +14,37 @@ export class AuthService {
         this.databases = new Databases(this.client);
     }
 
-    // Create Account (create user, login immediately, and send email verification)
     async createAccount({ email, password, name }) {
         try {
             console.log("Received data in createAccount:", { email, password, name });
 
-            // Validate email format (simple regex)
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             if (!emailRegex.test(email)) {
                 console.error("Invalid email format:", email);
                 throw new Error("Invalid email format");
             }
 
-            // Validate password length
             if (password.length < 8) {
                 console.error("Password is too short. Minimum length is 8 characters.");
                 throw new Error("Password is too short. Minimum length is 8 characters.");
             }
 
-            // Step 1: Create the user account in Appwrite
             const userAccount = await this.account.create(ID.unique(), email, password, name);
             if (userAccount) {
                 console.log("User account created successfully:", userAccount);
 
-                // Step 2: Log the user in (so they are authenticated)
                 const session = await this.account.createEmailPasswordSession(email, password);
                 if (!session) {
                     throw new Error("Failed to log in user after account creation.");
                 }
 
-                // Step 3: Send the verification email after successful login
                 await this.sendVerificationEmail();
 
-                // Toast notification for verification email sent
-                toast.success("Verification link is sent to your email. Please check your inbox.");
-
-                return { success: true, message: "Account created successfully. Please verify your email.", user: userAccount };
+                return {
+                    success: true,
+                    message: "Account created successfully. Please verify your email.",
+                    user: userAccount
+                };
             }
             return { success: false, message: "Account creation failed. Try again." };
         } catch (error) {
@@ -62,14 +56,13 @@ export class AuthService {
         }
     }
 
-    // Login User (checks if email verified)
     async login({ email, password }) {
         try {
             const session = await this.account.createEmailPasswordSession(email, password);
             const user = await this.getCurrentUser();
 
             if (!user.emailVerification) {
-                await this.account.deleteSession("current"); // Force logout if email not verified
+                await this.account.deleteSession("current");
                 throw new Error('Email not verified. Please verify your email before logging in.');
             }
 
@@ -85,7 +78,6 @@ export class AuthService {
         }
     }
 
-    // Get Current User
     async getCurrentUser() {
         try {
             return await this.account.get();
@@ -95,15 +87,12 @@ export class AuthService {
         }
     }
 
-    // Logout User
     async logout() {
         try {
-            await this.account.deleteSessions(); // Try to destroy all sessions
+            await this.account.deleteSessions();
             console.log("AuthService :: logout :: Appwrite session deleted successfully.");
         } catch (error) {
             console.error("AuthService :: logout :: error", error);
-
-            // Gracefully handle guest session error
             if (
                 error?.message?.includes("missing scope") ||
                 error?.message?.toLowerCase().includes("guest")
@@ -113,14 +102,12 @@ export class AuthService {
                 throw new Error(error.message || "Failed to logout. Please try again.");
             }
         } finally {
-            // Always clear local session info and redirect
             localStorage.clear();
             sessionStorage.clear();
-            window.location.href = '/login'; // Or navigate using router
+            window.location.href = '/login';
         }
     }
 
-    // Fetch Posts for Logged-In User
     async getUserPosts(userId) {
         try {
             const response = await this.databases.listDocuments(
@@ -135,10 +122,8 @@ export class AuthService {
         }
     }
 
-    // Send Email Verification
     async sendVerificationEmail() {
         try {
-            // fallback URL to-> /verify page
             return await this.account.createVerification(`${conf.appwriteDomain}/verify`);
         } catch (error) {
             console.error('AuthService :: sendVerificationEmail :: error', error);
@@ -146,10 +131,8 @@ export class AuthService {
         }
     }
 
-    // Send Password Recovery Email
     async sendRecoveryEmail(email) {
         try {
-            //  fallback URL to-> /reset-password page
             return await this.account.createRecovery(email, `${conf.appwriteDomain}/reset-password`);
         } catch (error) {
             console.error('AuthService :: sendRecoveryEmail :: error', error);
@@ -157,7 +140,6 @@ export class AuthService {
         }
     }
 
-    // Confirm Password Reset
     async confirmRecovery(userId, secret, newPassword) {
         try {
             return await this.account.updateRecovery(userId, secret, newPassword, newPassword);
@@ -167,7 +149,6 @@ export class AuthService {
         }
     }
 
-    // Confirm Email Verification (for email verification confirmation process)
     async confirmEmailVerification(userId, secret) {
         try {
             return await this.account.updateVerification(userId, secret);
@@ -178,6 +159,5 @@ export class AuthService {
     }
 }
 
-// Create and export a single instance
 const authService = new AuthService();
 export default authService;

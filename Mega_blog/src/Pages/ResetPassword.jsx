@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
 import authService from "../appwrite/auth";
-import { toast } from "react-toastify";
 
 const ResetPassword = () => {
   const [password, setPassword] = useState("");
@@ -34,18 +33,15 @@ const ResetPassword = () => {
 
     if (!userId || !secret) {
       setError("Missing reset information");
-      toast.error("Missing reset information");
       return;
     }
 
     setLoading(true);
     try {
       await authService.confirmRecovery(userId, secret, password);
-      toast.success("Password reset successful");
       navigate("/login");
     } catch (error) {
       setError("Password reset failed. Please try again.");
-      toast.error("Password reset failed. Please try again.");
       console.error("Error resetting password", error);
     } finally {
       setLoading(false);
