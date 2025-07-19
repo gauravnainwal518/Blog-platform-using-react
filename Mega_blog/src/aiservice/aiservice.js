@@ -6,13 +6,16 @@ export const getAiResponse = async (inputText) => {
     throw new Error("Input must be a non-empty string");
   }
 
+  const formData = new URLSearchParams();
+  formData.append("data", JSON.stringify({ inputText }));
+
   try {
     const response = await axios({
       method: 'post',
       url: `${conf.appwriteUrl}/functions/${conf.appwriteFunctionId}/executions`,
-      data: JSON.stringify({ inputText }), // ✅ JSON payload
+      data: formData,
       headers: {
-        'Content-Type': 'application/json', // ✅ Content-Type must match
+        'Content-Type': 'application/x-www-form-urlencoded',
         'X-Appwrite-Project': conf.appwriteProjectId,
       }
     });
