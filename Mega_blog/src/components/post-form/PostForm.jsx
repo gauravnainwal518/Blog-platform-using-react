@@ -4,7 +4,6 @@ import { Input, RTE, Button, Select } from "../components";
 import appwriteService from "../appwrite/config";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import toast from "react-hot-toast";
 
 const PostForm = ({ post }) => {
   const { register, handleSubmit, watch, setValue, control } = useForm({
@@ -32,7 +31,7 @@ const PostForm = ({ post }) => {
 
   const submit = async (data) => {
     if (!userData) {
-      toast.error("User not authenticated");
+      alert("User not authenticated");
       return;
     }
 
@@ -51,21 +50,21 @@ const PostForm = ({ post }) => {
         responsePost = await appwriteService.updatePost(post.$id, {
           ...data,
           featuredImage: file,
-          authorName: userData.name || userData.email, //  authorName added
+          authorName: userData.name || userData.email,
           updatedAt: now,
         });
-        toast.success("Post updated successfully");
+        alert("Post updated successfully");
       } else {
         // CREATE
         responsePost = await appwriteService.createPost({
           ...data,
           featuredImage: file,
           userId: userData.$id,
-          authorName: userData.name || userData.email, //   authorName added
+          authorName: userData.name || userData.email,
           createdAt: now,
           updatedAt: now,
         });
-        toast.success("Post created successfully");
+        alert("Post created successfully");
       }
 
       if (responsePost) {
@@ -73,7 +72,7 @@ const PostForm = ({ post }) => {
       }
     } catch (error) {
       console.error("Post form error:", error);
-      toast.error("Something went wrong while saving the post");
+      alert("Something went wrong while saving the post");
     }
   };
 
