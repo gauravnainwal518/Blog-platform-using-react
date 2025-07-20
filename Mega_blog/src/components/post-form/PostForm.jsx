@@ -32,6 +32,13 @@ function PostForm({ post }) {
   const autoSaveTimer = useRef(null);
   const isSubmittingRef = useRef(false);
 
+  // ✅ Manually register image input
+  useEffect(() => {
+    register("image", {
+      required: !post ? "Featured image is required" : false,
+    });
+  }, [register, post]);
+
   const savePost = async (data, status = "inactive", isAutoSave = false) => {
     if (isSubmittingRef.current && !isAutoSave) return;
 
@@ -157,17 +164,15 @@ function PostForm({ post }) {
       </div>
 
       <div className="w-full lg:w-1/3 space-y-6">
-        {/* Featured Image Upload */}
+        {/* ✅ File input uses onChange only */}
         <Input
           label="Featured Image"
           type="file"
           accept="image/png, image/jpg, image/jpeg, image/gif"
-          {...register("image", {
-            required: !post ? "Featured image is required" : false,
-          })}
           onChange={(e) => {
-            // This is the correct way to update the form value
-            setValue("image", e.target.files);
+            const fileList = e.target.files;
+            setValue("image", fileList);
+            trigger("image");
           }}
         />
 
