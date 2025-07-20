@@ -164,11 +164,11 @@ function PostForm({ post }) {
           accept="image/png, image/jpg, image/jpeg, image/gif"
           {...register("image", {
             required: !post ? "Featured image is required" : false,
-            //  This handles the image properly
-            onChange: (e) => {
-              return e.target.files;
-            },
           })}
+          onChange={(e) => {
+            // This is the correct way to update the form value
+            setValue("image", e.target.files);
+          }}
         />
 
         {post?.featuredImage && (
