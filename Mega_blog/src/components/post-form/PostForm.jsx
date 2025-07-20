@@ -20,7 +20,7 @@ function PostForm({ post }) {
       title: post?.title || "",
       slug: post?.slug || "",
       content: post?.content || "",
-      status: post?.status || "inactive", // default status
+      status: post?.status || "inactive",
     },
   });
 
@@ -51,10 +51,9 @@ function PostForm({ post }) {
       if (post) {
         if (data.image && data.image.length > 0) {
           const file = await appwriteService.uploadFile(data.image[0]);
-          if (file) commonData.featuredImageFile = file.$id;
+          if (file) commonData.featuredImage = file.$id;
         } else {
-          commonData.featuredImageFile =
-            post.featuredImage || "default_image_id";
+          commonData.featuredImage = post.featuredImage || "default_image_id";
         }
 
         const response = await appwriteService.updatePost(post.$id, commonData);
@@ -77,7 +76,7 @@ function PostForm({ post }) {
 
         const dbPost = await appwriteService.createPost({
           ...commonData,
-          featuredImageFile: file.$id,
+          featuredImage: file.$id,
           userId: userData.$id,
           createdAt: now,
         });
