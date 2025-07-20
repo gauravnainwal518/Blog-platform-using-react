@@ -165,7 +165,11 @@ function PostForm({ post }) {
           {...register("image", {
             required: !post ? "Featured image is required" : false,
           })}
+          onChange={(e) => {
+            setValue("image", e.target.files); // ensure image gets into form state
+          }}
         />
+
         {post?.featuredImage && (
           <div className="rounded-lg overflow-hidden border">
             <img
