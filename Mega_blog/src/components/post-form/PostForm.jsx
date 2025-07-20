@@ -32,7 +32,7 @@ function PostForm({ post }) {
   const autoSaveTimer = useRef(null);
   const isSubmittingRef = useRef(false);
 
-  // ✅ Manually register image input
+  //  Manually register image input
   useEffect(() => {
     register("image", {
       required: !post ? "Featured image is required" : false,
@@ -56,8 +56,9 @@ function PostForm({ post }) {
       };
 
       if (post) {
-        if (data.image && data.image.length > 0) {
-          const file = await appwriteService.uploadFile(data.image[0]);
+        if (data.image) {
+          const file = await appwriteService.uploadFile(data.image);
+
           if (file) commonData.featuredImage = file.$id;
         } else {
           commonData.featuredImage = post.featuredImage || "default_image_id";
@@ -70,7 +71,7 @@ function PostForm({ post }) {
           dispatch({ type: "posts/updatePost", payload: response });
         }
       } else {
-        if (!data.image || data.image.length === 0) {
+        if (!data.image) {
           if (!isAutoSave) alert("Please upload a featured image.");
           return;
         }
@@ -164,7 +165,7 @@ function PostForm({ post }) {
       </div>
 
       <div className="w-full lg:w-1/3 space-y-6">
-        {/* ✅ File input uses onChange only */}
+        {/*  File input uses onChange only */}
         <Input
           label="Featured Image"
           type="file"
