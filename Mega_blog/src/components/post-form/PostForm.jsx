@@ -1,11 +1,12 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef } from "react";
+import dayjs from "dayjs";
 import { useForm } from "react-hook-form";
-import { Input, RTE, Button } from "../../components/index";
+import { Input, RTE, Button } from "../../components";
 import appwriteService from "../../appwrite/config";
 import { useNavigate } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 
-const PostForm = ({ post }) => {
+function PostForm({ post }) {
   const {
     register,
     handleSubmit,
@@ -13,128 +14,216 @@ const PostForm = ({ post }) => {
     setValue,
     control,
     getValues,
-    reset,
-    formState: { errors },
+    trigger,
   } = useForm({
     defaultValues: {
       title: post?.title || "",
       slug: post?.slug || "",
       content: post?.content || "",
-      status: post?.status || "",
+      status: post?.status || "inactive", // default status
     },
   });
 
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const userData = useSelector((state) => state.auth.userData);
-  const [file, setFile] = useState(null);
-  const [imagePreview, setImagePreview] = useState(post?.image || "");
+  const isDarkMode = useSelector((state) => state.theme.isDarkMode);
 
-  const submit = async (data) => {
-    if (post) {
-      const fileToUpload = file ? await appwriteService.uploadFile(file) : null;
+  const autoSaveTimer = useRef(null);
+  const isSubmittingRef = useRef(false);
 
-      if (fileToUpload) {
-        await appwriteService.deleteFile(post.featuredImage);
-      }
+  const savePost = async (data, status = "inactive", isAutoSave = false) => {
+    if (isSubmittingRef.current && !isAutoSave) return;
 
-      const dbPost = await appwriteService.updatePost(post.$id, {
-        ...data,
-        featuredImage: fileToUpload ? fileToUpload.$id : post.featuredImage,
-      });
+    try {
+      if (!isAutoSave) isSubmittingRef.current = true;
 
-      if (dbPost) {
-        navigate(`/post/${dbPost.$id}`);
-      }
-    } else {
-      const fileToUpload = await appwriteService.uploadFile(file);
+      const now = dayjs().toISOString();
+      const commonData = {
+        title: data.title,
+        slug: data.slug,
+        content: data.content,
+        status,
+        updatedAt: now,
+        author: userData?.name || userData?.email,
+      };
 
-      if (fileToUpload) {
+      if (post) {
+        if (data.image && data.image.length > 0) {
+          const file = await appwriteService.uploadFile(data.image[0]);
+          if (file) commonData.featuredImageFile = file.$id;
+        } else {
+          commonData.featuredImageFile =
+            post.featuredImage || "default_image_id";
+        }
+
+        const response = await appwriteService.updatePost(post.$id, commonData);
+
+        if (response && !isAutoSave) {
+          navigate(`/post/${post.$id}`);
+          dispatch({ type: "posts/updatePost", payload: response });
+        }
+      } else {
+        if (!data.image || data.image.length === 0) {
+          if (!isAutoSave) alert("Please upload a featured image.");
+          return;
+        }
+
+        const file = await appwriteService.uploadFile(data.image[0]);
+        if (!file) {
+          if (!isAutoSave) alert("Image upload failed.");
+          return;
+        }
+
         const dbPost = await appwriteService.createPost({
-          ...data,
-          featuredImage: fileToUpload.$id,
-          author: userData?.name || "Anonymous",
+          ...commonData,
+          featuredImageFile: file.$id,
+          userId: userData.$id,
+          createdAt: now,
         });
 
-        if (dbPost) {
+        if (dbPost && !isAutoSave) {
           navigate(`/post/${dbPost.$id}`);
+          dispatch({ type: "posts/addPost", payload: dbPost });
         }
       }
+    } catch (error) {
+      console.error("Error saving post:", error);
+      if (!isAutoSave) alert("An error occurred. Please try again.");
+    } finally {
+      if (!isAutoSave) isSubmittingRef.current = false;
     }
   };
 
-  const handleImageChange = useCallback((e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setFile(file);
-      setImagePreview(URL.createObjectURL(file));
-    }
+  const submit = (data) => savePost(data, "active");
+  const saveAsDraft = (data) => savePost(data, "inactive");
+
+  const slugTransform = useCallback((value) => {
+    return (
+      value
+        ?.trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "") || ""
+    );
   }, []);
 
+  useEffect(() => {
+    const subscription = watch((value, { name }) => {
+      if (name === "title") {
+        setValue("slug", slugTransform(value.title), { shouldValidate: true });
+      }
+
+      if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current);
+
+      autoSaveTimer.current = setTimeout(async () => {
+        const formData = getValues();
+        const isValid = await trigger(["title", "slug", "content"]);
+        if (isValid) await savePost(formData, "inactive", true);
+      }, 30000); // Auto-save every 30s
+    });
+
+    return () => subscription.unsubscribe();
+  }, [watch, setValue, slugTransform, getValues, trigger]);
+
   return (
-    <div className="max-w-3xl mx-auto p-6 bg-gray-900 text-white rounded-lg shadow-md">
-      <form onSubmit={handleSubmit(submit)} className="space-y-6">
+    <form
+      onSubmit={handleSubmit(submit)}
+      className={`flex flex-wrap gap-6 px-6 py-10 transition-all duration-300 min-h-screen w-full rounded-xl shadow-xl ${
+        isDarkMode ? "bg-gray-900 text-white" : "bg-gray-50 text-gray-900"
+      }`}
+    >
+      <div className="w-full lg:w-2/3 space-y-6">
         <Input
           label="Title"
-          placeholder="Enter title"
+          placeholder="Enter your blog title"
           {...register("title", { required: true })}
         />
-        {errors.title && <p className="text-red-500">Title is required</p>}
-
         <Input
           label="Slug"
-          placeholder="enter-slug"
+          placeholder="Auto-generated slug"
           {...register("slug", { required: true })}
+          onInput={(e) =>
+            setValue("slug", slugTransform(e.currentTarget.value), {
+              shouldValidate: true,
+            })
+          }
         />
-        {errors.slug && <p className="text-red-500">Slug is required</p>}
-
-        {/* Status Select Field */}
-        <div className="w-full">
-          <label htmlFor="status" className="block font-medium mb-1">
-            Status
-          </label>
-          <select
-            id="status"
-            {...register("status", { required: true })}
-            className="w-full p-2 rounded bg-gray-800 text-white border border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="">-- Select Status --</option>
-            <option value="published">Published</option>
-            <option value="draft">Draft</option>
-          </select>
-          {errors.status && (
-            <p className="text-red-500 text-sm mt-1">Status is required</p>
-          )}
-        </div>
-
         <RTE
           label="Content"
           name="content"
           control={control}
           defaultValue={getValues("content")}
         />
-        {errors.content && <p className="text-red-500">Content is required</p>}
+      </div>
 
-        <div>
-          <label className="block mb-1">Featured Image</label>
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handleImageChange}
-            className="text-white"
-          />
-          {imagePreview && (
+      <div className="w-full lg:w-1/3 space-y-6">
+        {/* Featured Image Upload */}
+        <Input
+          label="Featured Image"
+          type="file"
+          accept="image/png, image/jpg, image/jpeg, image/gif"
+          {...register("image", {
+            required: !post ? "Featured image is required" : false,
+          })}
+        />
+        {post?.featuredImage && (
+          <div className="rounded-lg overflow-hidden border">
             <img
-              src={imagePreview}
-              alt="Preview"
-              className="mt-4 h-40 object-contain"
+              src={appwriteService.getFilePreview(post.featuredImage)}
+              alt={post.title}
+              className="object-cover w-full h-48"
             />
-          )}
+          </div>
+        )}
+
+        {/* Status Select */}
+        <div className="flex flex-col gap-2">
+          <label htmlFor="status" className="text-sm font-medium">
+            Status
+          </label>
+          <select
+            id="status"
+            {...register("status")}
+            className={`rounded-md border px-3 py-2 focus:outline-none ${
+              isDarkMode
+                ? "bg-gray-800 border-gray-700 text-white"
+                : "bg-white border-gray-300 text-black"
+            }`}
+          >
+            <option value="active">Published</option>
+            <option value="inactive">Draft</option>
+          </select>
         </div>
 
-        <Button type="submit">{post ? "Update Post" : "Create Post"}</Button>
-      </form>
-    </div>
+        {/* Author Info */}
+        {userData?.name || userData?.email ? (
+          <p className="text-sm text-gray-500 dark:text-gray-300">
+            Author: <strong>{userData.name || userData.email}</strong>
+          </p>
+        ) : null}
+
+        <Button
+          type="submit"
+          className={`w-full py-3 ${
+            isDarkMode ? "bg-green-600" : "bg-green-500"
+          }`}
+        >
+          {post ? "Update Post" : "Publish Post"}
+        </Button>
+
+        <Button
+          type="button"
+          className={`w-full py-3 ${
+            isDarkMode ? "bg-yellow-600" : "bg-yellow-500"
+          }`}
+          onClick={handleSubmit(saveAsDraft)}
+        >
+          Save as Draft
+        </Button>
+      </div>
+    </form>
   );
-};
+}
 
 export default PostForm;
