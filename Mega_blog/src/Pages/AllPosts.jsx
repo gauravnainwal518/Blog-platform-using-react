@@ -34,32 +34,28 @@ const AllPosts = () => {
   useEffect(() => {
     appwriteService.getAllPosts().then((res) => {
       if (res && res.documents) {
-        dispatch(setPosts(res.documents));
+        const publishedPosts = res.documents.filter(
+          (post) => post.status === "active" // or 'published' based on your Appwrite schema
+        );
+        dispatch(setPosts(publishedPosts));
       }
       setLoading(false);
     });
   }, [dispatch]);
 
   const filterPosts = () => {
-    // ✅ Step 1: Filter only published posts
-    let filtered = posts.filter((post) => post.status === "active");
+    let filtered = [...posts];
 
-    // ✅ Step 2: If "mine" filter is selected, show only user’s posts
     if (filter === "mine") {
       filtered = filtered.filter((post) => post.userId === userData?.$id);
     }
 
-    // ✅ Step 3: Apply sorting
     if (sortBy === "latest") {
-      filtered = [...filtered].sort(
-        (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
-      );
+      filtered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     } else if (sortBy === "oldest") {
-      filtered = [...filtered].sort(
-        (a, b) => new Date(a.createdAt) - new Date(b.createdAt)
-      );
+      filtered.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
     } else if (sortBy === "title") {
-      filtered = [...filtered].sort((a, b) => a.title.localeCompare(b.title));
+      filtered.sort((a, b) => a.title.localeCompare(b.title));
     }
 
     return filtered;
