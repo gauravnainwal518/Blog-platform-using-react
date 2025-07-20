@@ -28,10 +28,16 @@ function PostForm({ post }) {
   const userData = useSelector((state) => state.auth.userData);
   const isDarkMode = useSelector((state) => state.theme.isDarkMode);
   const autoSaveTimer = useRef(null);
+  const isSubmittingRef = useRef(false); // ✅ New flag to prevent duplicate submissions
 
   const savePost = async (data, status = "inactive", isAutoSave = false) => {
+    if (isSubmittingRef.current && !isAutoSave) return; // ✅ Skip if already submitting manually
+
     try {
+      if (!isAutoSave) isSubmittingRef.current = true;
+
       const now = dayjs().toISOString();
+
       if (post) {
         const updatedData = {
           title: data.title,
@@ -40,6 +46,7 @@ function PostForm({ post }) {
           status,
           updatedAt: now,
         };
+
         if (data.image && data.image.length > 0) {
           const file = await appwriteService.uploadFile(data.image[0]);
           if (file) updatedData.featuredImageFile = file.$id;
@@ -47,10 +54,12 @@ function PostForm({ post }) {
           updatedData.featuredImageFile =
             post.featuredImage || "default_image_id";
         }
+
         const response = await appwriteService.updatePost(
           post.$id,
           updatedData
         );
+
         if (response && !isAutoSave) {
           navigate(`/post/${post.$id}`);
           dispatch({ type: "posts/updatePost", payload: response });
@@ -60,11 +69,13 @@ function PostForm({ post }) {
           if (!isAutoSave) alert("Please upload a featured image.");
           return;
         }
+
         const file = await appwriteService.uploadFile(data.image[0]);
         if (!file) {
           if (!isAutoSave) alert("Image upload failed.");
           return;
         }
+
         const dbPost = await appwriteService.createPost({
           title: data.title,
           slug: data.slug,
@@ -75,6 +86,7 @@ function PostForm({ post }) {
           createdAt: now,
           updatedAt: now,
         });
+
         if (dbPost && !isAutoSave) {
           navigate(`/post/${dbPost.$id}`);
           dispatch({ type: "posts/addPost", payload: dbPost });
@@ -83,6 +95,8 @@ function PostForm({ post }) {
     } catch (error) {
       console.error("Error saving post:", error);
       if (!isAutoSave) alert("An error occurred. Please try again.");
+    } finally {
+      if (!isAutoSave) isSubmittingRef.current = false;
     }
   };
 
@@ -104,13 +118,16 @@ function PostForm({ post }) {
       if (name === "title") {
         setValue("slug", slugTransform(value.title), { shouldValidate: true });
       }
+
       if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current);
+
       autoSaveTimer.current = setTimeout(async () => {
         const formData = getValues();
         const isValid = await trigger(["title", "slug", "content"]);
         if (isValid) await savePost(formData, "inactive", true);
-      }, 30000);
+      }, 30000); // Auto-save every 30 seconds
     });
+
     return () => subscription.unsubscribe();
   }, [watch, setValue, slugTransform, getValues, trigger]);
 
@@ -154,6 +171,7 @@ function PostForm({ post }) {
             required: !post ? "Featured image is required" : false,
           })}
         />
+
         {post?.featuredImage && (
           <div className="rounded-lg overflow-hidden border">
             <img
@@ -163,6 +181,7 @@ function PostForm({ post }) {
             />
           </div>
         )}
+
         <Button
           type="submit"
           className={`w-full py-3 ${
@@ -171,6 +190,7 @@ function PostForm({ post }) {
         >
           {post ? "Update Post" : "Publish Post"}
         </Button>
+
         <Button
           type="button"
           className={`w-full py-3 ${
