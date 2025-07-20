@@ -32,23 +32,36 @@ const AllPosts = () => {
   const isDarkMode = useSelector((state) => state.theme.isDarkMode);
 
   useEffect(() => {
-    appwriteService.getAllPosts().then((res) => {
-      if (res && res.documents) {
-        const publishedPosts = res.documents.filter(
-          (post) => post.status === "active" // or 'published' based on your Appwrite schema
-        );
-        dispatch(setPosts(publishedPosts));
+    async function fetchAndFilterPosts() {
+      try {
+        const res = await appwriteService.getAllPosts();
+        if (res && res.documents) {
+          console.log("Fetched posts:", res.documents);
+          const published = res.documents.filter(
+            (post) => post.status?.toLowerCase() === "active"
+          );
+          console.log("Filtered published posts:", published);
+          dispatch(setPosts(published));
+        }
+      } catch (e) {
+        console.error("Error fetching posts:", e);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
-    });
+    }
+
+    fetchAndFilterPosts();
   }, [dispatch]);
 
   const filterPosts = () => {
-    let filtered = [...posts];
+    const normalized = posts.filter(
+      (post) => post.status?.toLowerCase() === "active"
+    );
 
-    if (filter === "mine") {
-      filtered = filtered.filter((post) => post.userId === userData?.$id);
-    }
+    let filtered =
+      filter === "mine"
+        ? normalized.filter((post) => post.userId === userData?.$id)
+        : normalized;
 
     if (sortBy === "latest") {
       filtered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
