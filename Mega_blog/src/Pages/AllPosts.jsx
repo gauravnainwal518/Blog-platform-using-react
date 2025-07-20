@@ -41,11 +41,15 @@ const AllPosts = () => {
   }, [dispatch]);
 
   const filterPosts = () => {
-    let filtered =
-      filter === "mine"
-        ? posts.filter((post) => post.userId === userData?.$id)
-        : posts;
+    // ✅ Step 1: Filter only published posts
+    let filtered = posts.filter((post) => post.status === "active");
 
+    // ✅ Step 2: If "mine" filter is selected, show only user’s posts
+    if (filter === "mine") {
+      filtered = filtered.filter((post) => post.userId === userData?.$id);
+    }
+
+    // ✅ Step 3: Apply sorting
     if (sortBy === "latest") {
       filtered = [...filtered].sort(
         (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
