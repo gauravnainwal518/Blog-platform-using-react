@@ -46,43 +46,45 @@ export class Service {
         }
     }
 
-    async createPost({ title, slug, content, featuredImageFile, status, userId }) {
-        if (!title || !slug || !content || !status || !userId) {
-            throw new Error("All fields are required to create a post.");
-        }
-    
-        if (!featuredImageFile) {
-            throw new Error("Featured image is required.");
-        }
-    
-        try {
-            const now = new Date().toISOString();
-    
-            const postData = {
-                title,
-                slug,
-                content,
-                featuredImage: featuredImageFile,
-                status,
-                userId,
-                createdAt: now,
-                updatedAt: now,
-                likedBy: []
-            };
-    
-            const createdPost = await this.databases.createDocument(
-                conf.appwriteDatabaseId,
-                conf.appwriteCollectionId,
-                ID.unique(),
-                postData
-            );
-
-            return createdPost;
-        } catch (error) {
-            console.error("Appwrite service :: createPost :: error", error);
-            throw error;
-        }
+   async createPost({ title, slug, content, featuredImageFile, status, userId, author }) {
+    if (!title || !slug || !content || !status || !userId || !author) {
+        throw new Error("All fields including author are required to create a post.");
     }
+
+    if (!featuredImageFile) {
+        throw new Error("Featured image is required.");
+    }
+
+    try {
+        const now = new Date().toISOString();
+
+        const postData = {
+            title,
+            slug,
+            content,
+            featuredImage: featuredImageFile,
+            status,
+            userId,
+            author, //  author added 
+            createdAt: now,
+            updatedAt: now,
+            likedBy: []
+        };
+
+        const createdPost = await this.databases.createDocument(
+            conf.appwriteDatabaseId,
+            conf.appwriteCollectionId,
+            ID.unique(),
+            postData
+        );
+
+        return createdPost;
+    } catch (error) {
+        console.error("Appwrite service :: createPost :: error", error);
+        throw error;
+    }
+}
+
 
     async fetchUserPosts(userId) {
         try {
