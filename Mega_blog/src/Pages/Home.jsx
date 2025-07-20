@@ -21,6 +21,9 @@ function Home() {
   const uniqueTags = [...new Set(posts.flatMap((post) => post.tags || []))];
 
   const filteredPosts = posts.filter((post) => {
+    // Ensure only published/active posts are shown
+    if (post.status !== "active") return false;
+
     const matchesSearch = post.title
       ?.toLowerCase()
       .includes(searchQuery.toLowerCase());
