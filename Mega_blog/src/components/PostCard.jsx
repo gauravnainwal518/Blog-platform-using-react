@@ -3,7 +3,7 @@ import appwriteService from "../appwrite/config";
 import { Link } from "react-router-dom";
 import { useSelector } from "react-redux";
 
-function PostCard({ $id, title, featuredImage, createdAt }) {
+function PostCard({ $id, title, featuredImage, createdAt, author }) {
   const [imageUrl, setImageUrl] = useState("default-image.jpg");
   const isDarkMode = useSelector((state) => state.theme.isDarkMode);
 
@@ -34,9 +34,16 @@ function PostCard({ $id, title, featuredImage, createdAt }) {
           />
         </div>
         <h2 className="text-xl font-semibold text-center">{title}</h2>
-        <p className="text-sm text-gray-400 mt-2">
+
+        <p className="text-sm text-gray-400 mt-2 text-center">
           Published on: {formattedDate} at {formattedTime}
         </p>
+
+        {author && (
+          <p className="text-sm text-gray-400 mt-1 text-center">
+            Published by: <span className="font-medium">{author}</span>
+          </p>
+        )}
       </div>
     </Link>
   );
