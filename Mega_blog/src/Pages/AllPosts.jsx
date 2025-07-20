@@ -149,11 +149,16 @@ const AllPosts = () => {
               }`}
             >
               <div className="p-5">
-                <div className="mb-2 text-sm opacity-70">
+                <div className="mb-1 text-sm opacity-70">
                   {post.createdAt
                     ? dayjs(post.createdAt).format("MMM D, YYYY")
                     : "Unknown Date"}
                 </div>
+                {post.author && (
+                  <div className="mb-2 text-xs text-gray-400 dark:text-gray-300 italic">
+                    Published by {post.author}
+                  </div>
+                )}
                 <h2 className="text-xl font-bold mb-3 truncate">
                   {post.title}
                 </h2>
