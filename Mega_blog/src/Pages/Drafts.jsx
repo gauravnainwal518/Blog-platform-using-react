@@ -30,6 +30,21 @@ function Drafts() {
     if (userData?.$id) fetchDrafts();
   }, [userData]);
 
+  const handleDelete = async (id) => {
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete this draft?"
+    );
+    if (!confirmDelete) return;
+
+    try {
+      await appwriteService.deletePost(id);
+      setDrafts((prev) => prev.filter((draft) => draft.$id !== id));
+    } catch (error) {
+      console.error("Failed to delete draft:", error);
+      alert("Error deleting draft. Please try again.");
+    }
+  };
+
   if (loading) return <Loader />;
 
   return (
@@ -43,15 +58,25 @@ function Drafts() {
           {drafts.map((draft) => (
             <div
               key={draft.$id}
-              className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 shadow-md hover:shadow-xl transition cursor-pointer"
-              onClick={() => navigate(`/edit-post/${draft.slug}`)}
+              className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 shadow-md hover:shadow-xl transition"
             >
-              <h2 className="text-xl font-semibold text-blue-600 dark:text-blue-300">
-                {draft.title || "Untitled Draft"}
-              </h2>
-              <p className="text-sm text-gray-500 mt-2 dark:text-gray-400">
-                Last updated: {new Date(draft.updatedAt).toLocaleString()}
-              </p>
+              <div
+                className="cursor-pointer"
+                onClick={() => navigate(`/edit-post/${draft.slug}`)}
+              >
+                <h2 className="text-xl font-semibold text-blue-600 dark:text-blue-300">
+                  {draft.title || "Untitled Draft"}
+                </h2>
+                <p className="text-sm text-gray-500 mt-2 dark:text-gray-400">
+                  Last updated: {new Date(draft.updatedAt).toLocaleString()}
+                </p>
+              </div>
+              <button
+                onClick={() => handleDelete(draft.$id)}
+                className="mt-4 bg-red-600 hover:bg-red-700 text-white text-sm px-4 py-2 rounded"
+              >
+                Delete Draft
+              </button>
             </div>
           ))}
         </div>
