@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import { useSelector } from "react-redux";
 
 function PostCard({ $id, title, featuredImage, createdAt, author }) {
-  const [imageUrl, setImageUrl] = useState("default-image.jpg");
+  const [imageUrl, setImageUrl] = useState("/default-image.jpg");
   const isDarkMode = useSelector((state) => state.theme.isDarkMode);
 
   useEffect(() => {
@@ -16,6 +16,14 @@ function PostCard({ $id, title, featuredImage, createdAt, author }) {
 
   const formattedDate = new Date(createdAt).toLocaleDateString();
   const formattedTime = new Date(createdAt).toLocaleTimeString();
+
+  //  Strip HTML tags from title using DOMParser
+  const parseHtmlToText = (html) => {
+    const doc = new DOMParser().parseFromString(html, "text/html");
+    return doc.body.textContent || "";
+  };
+
+  const cleanTitle = parseHtmlToText(title);
 
   return (
     <Link to={`/post/${$id}`}>
@@ -29,11 +37,12 @@ function PostCard({ $id, title, featuredImage, createdAt, author }) {
         <div className="w-full justify-center mb-4">
           <img
             src={imageUrl}
-            alt={title}
+            alt={cleanTitle}
             className="rounded-xl object-cover h-48 w-full"
           />
         </div>
-        <h2 className="text-xl font-semibold text-center">{title}</h2>
+
+        <h2 className="text-xl font-semibold text-center">{cleanTitle}</h2>
 
         <p className="text-sm text-gray-400 mt-2 text-center">
           Published on: {formattedDate} at {formattedTime}

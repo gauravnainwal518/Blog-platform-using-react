@@ -48,8 +48,8 @@ function Drafts() {
   if (loading) return <Loader />;
 
   return (
-    <div className="max-w-5xl mx-auto py-10 px-4">
-      <h1 className="text-3xl font-bold mb-6 dark:text-white">Your Drafts</h1>
+    <div className="min-h-screen w-full bg-white dark:bg-black text-black dark:text-white py-10 px-4">
+      <h1 className="text-3xl font-bold mb-6">Your Drafts</h1>
 
       {drafts.length === 0 ? (
         <p className="text-gray-600 dark:text-gray-300">No drafts available.</p>
