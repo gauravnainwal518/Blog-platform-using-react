@@ -46,9 +46,9 @@ export class Service {
         }
     }
 
-   async createPost({ title, slug, content, featuredImageFile, status, userId, author }) {
-    if (!title || !slug || !content || !status || !userId || !author) {
-        throw new Error("All fields including author are required to create a post.");
+   async createPost({ title, slug, content, featuredImageFile, status, userId, author, category, tags }) {
+    if (!title || !slug || !content || !status || !userId || !author || !category) {
+        throw new Error("All fields including category and author are required to create a post.");
     }
 
     if (!featuredImageFile) {
@@ -65,10 +65,12 @@ export class Service {
             featuredImage: featuredImageFile,
             status,
             userId,
-            author, //  author added 
+            author,
+            category,           //  added
+            tags: tags || [],   //  added, should be a string array
             createdAt: now,
             updatedAt: now,
-            likedBy: []
+            likedBy: []         // default empty array
         };
 
         const createdPost = await this.databases.createDocument(
@@ -84,6 +86,7 @@ export class Service {
         throw error;
     }
 }
+
 
 
     async fetchUserPosts(userId) {

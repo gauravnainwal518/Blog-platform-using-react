@@ -127,11 +127,16 @@ export default function Post() {
         )}
 
         {/* Post Title */}
-        <h1 className="text-4xl font-bold mb-2">{post.title}</h1>
         <p className="text-sm text-gray-400 mb-6">
           Published by{" "}
-          <span className="font-medium text-white">{post.author}</span> on{" "}
-          {dayjs(post.createdAt).format("MMMM D, YYYY")}
+          <span
+            className={`font-medium ${
+              isDarkMode ? "text-white" : "text-gray-800"
+            }`}
+          >
+            {post.author}
+          </span>{" "}
+          on {dayjs(post.createdAt).format("MMMM D, YYYY")}
         </p>
 
         {/* Content */}

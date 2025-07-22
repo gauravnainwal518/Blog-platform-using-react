@@ -20,7 +20,9 @@ function PostForm({ post }) {
       title: post?.title || "",
       slug: post?.slug || "",
       content: post?.content || "",
-      status: post?.status || "inactive", // default status
+      status: post?.status || "inactive",
+      category: post?.category || "Uncategorized", // set default here
+      tags: post?.tags?.join(", ") || "",
     },
   });
 
@@ -44,6 +46,11 @@ function PostForm({ post }) {
         slug: data.slug,
         content: data.content,
         status,
+        category: data.category,
+        tags: data.tags
+          .split(",")
+          .map((tag) => tag.trim())
+          .filter(Boolean),
         updatedAt: now,
         author: userData?.name || userData?.email,
       };
@@ -58,7 +65,6 @@ function PostForm({ post }) {
         }
 
         const response = await appwriteService.updatePost(post.$id, commonData);
-
         if (response && !isAutoSave) {
           navigate(`/post/${post.$id}`);
           dispatch({ type: "posts/updatePost", payload: response });
@@ -120,7 +126,7 @@ function PostForm({ post }) {
         const formData = getValues();
         const isValid = await trigger(["title", "slug", "content"]);
         if (isValid) await savePost(formData, "inactive", true);
-      }, 30000); // Auto-save every 30s
+      }, 30000);
     });
 
     return () => subscription.unsubscribe();
@@ -158,7 +164,6 @@ function PostForm({ post }) {
       </div>
 
       <div className="w-full lg:w-1/3 space-y-6">
-        {/* Featured Image Upload */}
         <Input
           label="Featured Image"
           type="file"
@@ -177,7 +182,37 @@ function PostForm({ post }) {
           </div>
         )}
 
-        {/* Status Select */}
+        {/* Category Dropdown */}
+        <div className="flex flex-col gap-2">
+          <label htmlFor="category" className="text-sm font-medium">
+            Category
+          </label>
+          <select
+            id="category"
+            {...register("category", { required: true })}
+            className={`rounded-md border px-3 py-2 focus:outline-none ${
+              isDarkMode
+                ? "bg-gray-800 border-gray-700 text-white"
+                : "bg-white border-gray-300 text-black"
+            }`}
+          >
+            <option value="Uncategorized">Uncategorized</option>
+            <option value="Technology">Technology</option>
+            <option value="Education">Education</option>
+            <option value="Health">Health</option>
+            <option value="Finance">Finance</option>
+            <option value="Entertainment">Entertainment</option>
+          </select>
+        </div>
+
+        {/* Tags Input */}
+        <Input
+          label="Tags (comma-separated)"
+          placeholder="e.g., web, react, blog"
+          {...register("tags")}
+        />
+
+        {/* Status */}
         <div className="flex flex-col gap-2">
           <label htmlFor="status" className="text-sm font-medium">
             Status
