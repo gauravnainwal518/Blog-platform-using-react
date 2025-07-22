@@ -1,10 +1,9 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
-import { PostCard, Loader } from "../components";
+import { PostCard } from "../components";
 
 import { FiSearch, FiArrowRight } from "react-icons/fi";
-import appwriteService from "../appwrite/config";
 import illustration from "../assets/earth-pen.png";
 
 const POSTS_PER_PAGE = 8;
@@ -25,16 +24,6 @@ function HomePage() {
     }, 300);
     return () => clearTimeout(timer);
   }, [searchQuery]);
-
-  useEffect(() => {
-    if (posts && posts.length > 0) {
-      const activePosts = posts.filter((post) => post.status === "active");
-      const sortedPosts = activePosts.sort(
-        (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
-      );
-      setFeaturedPost(sortedPosts[0]);
-    }
-  }, [posts]);
 
   const uniqueCategories = useMemo(
     () => [...new Set(posts.map((post) => post.category || "Uncategorized"))],
