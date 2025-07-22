@@ -1,17 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { useSelector } from "react-redux";
 import service from "../appwrite/config";
 
 const CommentSection = ({ postId }) => {
-  const [commentText, setCommentText] = useState(""); // For adding a new comment
-  const [comments, setComments] = useState([]); // For holding comments
-  const [currentUserId, setCurrentUserId] = useState(null); // For storing the current user ID
-  const [editingCommentId, setEditingCommentId] = useState(null); // For tracking which comment is being edited
-  const [editedCommentText, setEditedCommentText] = useState(""); // For storing edited comment text
+  const [commentText, setCommentText] = useState("");
+  const [comments, setComments] = useState([]);
+  const [currentUserId, setCurrentUserId] = useState(null);
+  const [editingCommentId, setEditingCommentId] = useState(null);
+  const [editedCommentText, setEditedCommentText] = useState("");
 
-  const isDarkMode = useSelector((state) => state.theme.isDarkMode); // Get theme from Redux
-
-  // Fetch comments for the given postId
   const fetchComments = async () => {
     try {
       const response = await service.fetchCommentsByArticleId(postId);
@@ -21,7 +17,6 @@ const CommentSection = ({ postId }) => {
     }
   };
 
-  // Fetch current user info
   const fetchCurrentUser = async () => {
     try {
       const user = await service.getUserData();
@@ -31,11 +26,10 @@ const CommentSection = ({ postId }) => {
     }
   };
 
-  // Add a new comment
   const handleAddComment = async () => {
     if (!commentText.trim() || !postId || !currentUserId) return;
 
-    const limitedContent = commentText.trim().substring(0, 255); // Limit the content length
+    const limitedContent = commentText.trim().substring(0, 255);
 
     try {
       await service.createComment({
@@ -44,14 +38,13 @@ const CommentSection = ({ postId }) => {
         userId: currentUserId,
       });
 
-      setCommentText(""); // Clear input after submitting
-      fetchComments(); // Fetch updated comments
+      setCommentText("");
+      fetchComments();
     } catch (error) {
       console.error("Error creating comment:", error);
     }
   };
 
-  // Delete a comment
   const handleDeleteComment = async (commentId, userId) => {
     if (userId !== currentUserId && currentUserId !== "admin") {
       console.error("You don't have permission to delete this comment.");
@@ -60,18 +53,16 @@ const CommentSection = ({ postId }) => {
 
     try {
       await service.deleteComment(commentId);
-      fetchComments(); // Fetch updated comments after deletion
+      fetchComments();
     } catch (error) {
       console.error("Error deleting comment:", error);
     }
   };
 
-  // Update an existing comment
   const handleUpdateComment = async (commentId, newContent) => {
     if (!newContent.trim()) return;
 
     const limitedContent = newContent.trim().substring(0, 255);
-    //console.log("Updating comment with content:", limitedContent); // Log the content before updating
 
     try {
       const oldComment = comments.find((comment) => comment.$id === commentId);
@@ -81,13 +72,12 @@ const CommentSection = ({ postId }) => {
         return;
       }
 
-      // Ensure the content is a string
       const updatedData = {
         ...oldComment,
-        content: String(limitedContent), // Explicitly convert to string
+        content: String(limitedContent),
       };
 
-      await service.updateComment(commentId, updatedData.content); // Pass the string content
+      await service.updateComment(commentId, updatedData.content);
 
       setComments((prevComments) =>
         prevComments.map((comment) =>
@@ -104,49 +94,34 @@ const CommentSection = ({ postId }) => {
     }
   };
 
-  // Start editing a comment
   const handleEditComment = (commentId, content) => {
     if (typeof content !== "string") {
-      content = String(content); // Ensure it's a string
+      content = String(content);
     }
 
     setEditingCommentId(commentId);
     setEditedCommentText(content);
   };
 
-  // Fetch comments and user data when component mounts
   useEffect(() => {
     fetchComments();
     fetchCurrentUser();
   }, [postId]);
 
   return (
-    <div
-      className={`p-4 ${
-        isDarkMode ? "bg-gray-900 text-white" : "bg-white text-black"
-      } rounded`}
-    >
+    <div className="p-4 bg-white text-black rounded">
       <h3 className="text-lg font-bold mb-4">Comments</h3>
 
       <div className="space-y-2 mb-4">
         {comments.map((comment) => (
-          <div
-            key={comment.$id}
-            className={`p-2 rounded ${
-              isDarkMode ? "bg-gray-800" : "bg-gray-100"
-            }`}
-          >
+          <div key={comment.$id} className="p-2 rounded bg-gray-100">
             {editingCommentId === comment.$id ? (
               <div>
                 <input
                   type="text"
                   value={editedCommentText}
                   onChange={(e) => setEditedCommentText(e.target.value)}
-                  className={`border p-2 mb-2 rounded w-full ${
-                    isDarkMode
-                      ? "bg-gray-700 text-white border-gray-600"
-                      : "bg-white text-black border-gray-300"
-                  }`}
+                  className="border p-2 mb-2 rounded w-full bg-white text-black border-gray-300"
                 />
                 <button
                   onClick={() =>
@@ -199,11 +174,7 @@ const CommentSection = ({ postId }) => {
       <div className="flex space-x-2">
         <input
           type="text"
-          className={`border p-2 flex-1 rounded ${
-            isDarkMode
-              ? "bg-gray-800 text-white border-gray-600"
-              : "bg-white text-black border-gray-300"
-          }`}
+          className="border p-2 flex-1 rounded bg-white text-black border-gray-300"
           placeholder="Add a comment..."
           value={commentText}
           onChange={(e) => setCommentText(e.target.value)}

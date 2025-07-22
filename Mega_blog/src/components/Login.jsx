@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button, Input } from "./index";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import authService from "../appwrite/auth";
 import { login as authLogin } from "../store/authSlice";
 import { setPosts } from "../store/postSlice";
@@ -17,8 +17,6 @@ function Login() {
   } = useForm();
   const [isEmailNotVerified, setIsEmailNotVerified] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-
-  const isDarkMode = useSelector((state) => state.theme.isDarkMode);
 
   const login = async (data) => {
     setIsEmailNotVerified(false);
@@ -63,18 +61,8 @@ function Login() {
   };
 
   return (
-    <div
-      className={`flex items-center justify-center min-h-screen px-4 transition-all duration-300 ${
-        isDarkMode ? "bg-gray-900 text-white" : "bg-gray-50 text-gray-900"
-      }`}
-    >
-      <div
-        className={`w-full max-w-md rounded-xl p-10 shadow-2xl border transition-all duration-300 hover:shadow-3xl ${
-          isDarkMode
-            ? "bg-gray-800 border-gray-700"
-            : "bg-white border-gray-200"
-        }`}
-      >
+    <div className="flex items-center justify-center min-h-screen px-4 bg-gray-50 text-gray-900 transition-all duration-300">
+      <div className="w-full max-w-md rounded-xl p-10 shadow-2xl border border-gray-200 bg-white transition-all duration-300 hover:shadow-3xl">
         <div className="mb-6 flex justify-center">
           <img src="/typenest.png" alt="Logo" className="w-28 h-auto" />
         </div>

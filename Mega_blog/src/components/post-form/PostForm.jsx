@@ -21,7 +21,7 @@ function PostForm({ post }) {
       slug: post?.slug || "",
       content: post?.content || "",
       status: post?.status || "inactive",
-      category: post?.category || "Uncategorized", // set default here
+      category: post?.category || "Uncategorized",
       tags: post?.tags?.join(", ") || "",
     },
   });
@@ -29,7 +29,6 @@ function PostForm({ post }) {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const userData = useSelector((state) => state.auth.userData);
-  const isDarkMode = useSelector((state) => state.theme.isDarkMode);
 
   const autoSaveTimer = useRef(null);
   const isSubmittingRef = useRef(false);
@@ -135,9 +134,7 @@ function PostForm({ post }) {
   return (
     <form
       onSubmit={handleSubmit(submit)}
-      className={`flex flex-wrap gap-6 px-6 py-10 transition-all duration-300 min-h-screen w-full rounded-xl shadow-xl ${
-        isDarkMode ? "bg-gray-900 text-white" : "bg-gray-50 text-gray-900"
-      }`}
+      className="flex flex-wrap gap-6 px-6 py-10 transition-all duration-300 min-h-screen w-full rounded-xl shadow-xl bg-gray-50 text-gray-900"
     >
       <div className="w-full lg:w-2/3 space-y-6">
         <Input
@@ -190,11 +187,7 @@ function PostForm({ post }) {
           <select
             id="category"
             {...register("category", { required: true })}
-            className={`rounded-md border px-3 py-2 focus:outline-none ${
-              isDarkMode
-                ? "bg-gray-800 border-gray-700 text-white"
-                : "bg-white border-gray-300 text-black"
-            }`}
+            className="rounded-md border px-3 py-2 focus:outline-none bg-white border-gray-300 text-black"
           >
             <option value="Uncategorized">Uncategorized</option>
             <option value="Technology">Technology</option>
@@ -220,11 +213,7 @@ function PostForm({ post }) {
           <select
             id="status"
             {...register("status")}
-            className={`rounded-md border px-3 py-2 focus:outline-none ${
-              isDarkMode
-                ? "bg-gray-800 border-gray-700 text-white"
-                : "bg-white border-gray-300 text-black"
-            }`}
+            className="rounded-md border px-3 py-2 focus:outline-none bg-white border-gray-300 text-black"
           >
             <option value="active">Published</option>
             <option value="inactive">Draft</option>
@@ -233,25 +222,18 @@ function PostForm({ post }) {
 
         {/* Author Info */}
         {userData?.name || userData?.email ? (
-          <p className="text-sm text-gray-500 dark:text-gray-300">
+          <p className="text-sm text-gray-500">
             Author: <strong>{userData.name || userData.email}</strong>
           </p>
         ) : null}
 
-        <Button
-          type="submit"
-          className={`w-full py-3 ${
-            isDarkMode ? "bg-green-600" : "bg-green-500"
-          }`}
-        >
+        <Button type="submit" className="w-full py-3 bg-green-500">
           {post ? "Update Post" : "Publish Post"}
         </Button>
 
         <Button
           type="button"
-          className={`w-full py-3 ${
-            isDarkMode ? "bg-yellow-600" : "bg-yellow-500"
-          }`}
+          className="w-full py-3 bg-yellow-500"
           onClick={handleSubmit(saveAsDraft)}
         >
           Save as Draft

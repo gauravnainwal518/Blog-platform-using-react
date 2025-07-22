@@ -2,14 +2,11 @@ import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import appwriteService from "../appwrite/config";
 import { PostForm } from "../components";
-import { useSelector } from "react-redux";
 
 function EditPost() {
   const { slug } = useParams();
   const [post, setPost] = useState(null);
   const [loading, setLoading] = useState(true);
-
-  const isDarkMode = useSelector((state) => state.theme.isDarkMode);
 
   useEffect(() => {
     if (slug) {
@@ -24,11 +21,7 @@ function EditPost() {
 
   if (loading) {
     return (
-      <div
-        className={`flex justify-center items-center min-h-screen ${
-          isDarkMode ? "bg-gray-800 text-white" : "bg-white text-gray-800"
-        }`}
-      >
+      <div className="flex justify-center items-center min-h-screen bg-white text-gray-800">
         <p className="text-lg font-semibold">Loading post...</p>
       </div>
     );
@@ -36,22 +29,14 @@ function EditPost() {
 
   if (!post) {
     return (
-      <div
-        className={`flex justify-center items-center min-h-screen ${
-          isDarkMode ? "bg-gray-800 text-white" : "bg-white text-gray-800"
-        }`}
-      >
+      <div className="flex justify-center items-center min-h-screen bg-white text-gray-800">
         <p className="text-lg font-semibold text-red-500">Post not found</p>
       </div>
     );
   }
 
   return (
-    <div
-      className={`py-8 ${
-        isDarkMode ? "bg-gray-800 text-white" : "bg-white text-gray-800"
-      }`}
-    >
+    <div className="py-8 bg-white text-gray-800">
       <PostForm post={post} />
     </div>
   );

@@ -16,8 +16,6 @@ export default function Post() {
   const navigate = useNavigate();
 
   const userData = useSelector((state) => state.auth.userData);
-  const isDarkMode = useSelector((state) => state.theme.isDarkMode);
-
   const isAuthor =
     post && userData && String(post.userId) === String(userData.$id);
 
@@ -66,11 +64,7 @@ export default function Post() {
 
   if (isLoading) {
     return (
-      <div
-        className={`min-h-screen flex items-center justify-center text-lg font-medium animate-pulse ${
-          isDarkMode ? "bg-gray-900 text-gray-300" : "bg-gray-100 text-gray-600"
-        }`}
-      >
+      <div className="min-h-screen flex items-center justify-center text-lg font-medium bg-gray-100 text-gray-600 animate-pulse">
         Loading...
       </div>
     );
@@ -78,27 +72,15 @@ export default function Post() {
 
   if (!post) {
     return (
-      <div
-        className={`min-h-screen flex items-center justify-center text-lg font-medium ${
-          isDarkMode ? "bg-gray-900 text-gray-300" : "bg-gray-100 text-gray-600"
-        }`}
-      >
+      <div className="min-h-screen flex items-center justify-center text-lg font-medium bg-gray-100 text-gray-600">
         Post not found.
       </div>
     );
   }
 
   return (
-    <div
-      className={`min-h-screen py-10 px-4 ${
-        isDarkMode ? "bg-gray-900 text-white" : "bg-gray-50 text-gray-900"
-      }`}
-    >
-      <div
-        className={`max-w-4xl mx-auto p-6 md:p-10 rounded-2xl shadow-2xl ${
-          isDarkMode ? "bg-gray-800" : "bg-white"
-        } transition-all duration-300`}
-      >
+    <div className="min-h-screen py-10 px-4 bg-gray-50 text-gray-900">
+      <div className="max-w-4xl mx-auto p-6 md:p-10 rounded-2xl shadow-2xl bg-white transition-all duration-300">
         {post.featuredImage && (
           <div className="w-full mb-8 overflow-hidden rounded-xl">
             <img
@@ -126,21 +108,15 @@ export default function Post() {
           </div>
         )}
 
-        {/* Post Title */}
+        {/* Post Meta */}
         <p className="text-sm text-gray-400 mb-6">
           Published by{" "}
-          <span
-            className={`font-medium ${
-              isDarkMode ? "text-white" : "text-gray-800"
-            }`}
-          >
-            {post.author}
-          </span>{" "}
-          on {dayjs(post.createdAt).format("MMMM D, YYYY")}
+          <span className="font-medium text-gray-800">{post.author}</span> on{" "}
+          {dayjs(post.createdAt).format("MMMM D, YYYY")}
         </p>
 
         {/* Content */}
-        <div className="prose prose-lg max-w-none dark:prose-invert">
+        <div className="prose prose-lg max-w-none">
           {typeof post.content === "string" ? (
             parse(post.content)
           ) : (

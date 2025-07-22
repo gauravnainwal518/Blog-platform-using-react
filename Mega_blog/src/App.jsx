@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import "./App.css";
 import { login, logout } from "./store/authSlice";
 import { clearPosts, setPosts } from "./store/postSlice";
@@ -11,8 +11,6 @@ import Loader from "./components/Loader/loader";
 function App() {
   const [loading, setLoading] = useState(true);
   const dispatch = useDispatch();
-
-  const isDarkMode = useSelector((state) => state.theme.isDarkMode);
 
   const fetchPosts = async (userId) => {
     try {
@@ -50,7 +48,7 @@ function App() {
   }, [dispatch]);
 
   return !loading ? (
-    <div className={`app-container ${isDarkMode ? "dark" : "light"}`}>
+    <div className="app-container">
       <Header />
       <main className="main-content">
         <Outlet />
@@ -58,7 +56,7 @@ function App() {
       <Footer />
     </div>
   ) : (
-    <Loader /> //
+    <Loader />
   );
 }
 

@@ -1,29 +1,17 @@
 /* Global Font Imports (Google Fonts) */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=DM+Serif+Display&display=swap');
 
-
-
 :root {
-  --primary-color: #6A0DAD; /* Vibrant purple */
-  --secondary-color: #550A91; /* Darker purple for hover */
-  --background-color: #f8f9fc; /* Light background */
-  --text-color: #333333; /* Dark gray text */
-  --footer-bg: #ffffff; /* White footer */
-  --header-bg: #ffffff; /* White header */
-  --card-bg: #ffffff; /* White card background */
-  --card-shadow: rgba(0, 0, 0, 0.1); /* Soft shadow */
-
-  /* Dark Mode Variables */
-  --dark-background-color: #121212; /* Dark background */
-  --dark-text-color: #ffffff; /* Light text for dark mode */
-  --dark-footer-bg: #333333; /* Dark footer */
-  --dark-header-bg: #333333; /* Dark header */
-  --dark-card-bg: #444444; /* Dark card background */
-  --dark-card-shadow: rgba(255, 255, 255, 0.1); /* Soft shadow for dark mode */
+  --primary-color: #6A0DAD;
+  --secondary-color: #550A91;
+  --background-color: #f8f9fc;
+  --text-color: #333333;
+  --footer-bg: #ffffff;
+  --header-bg: #ffffff;
+  --card-bg: #ffffff;
+  --card-shadow: rgba(0, 0, 0, 0.1);
 }
 
-
-/* Root styles for text color management */
 #root {
   width: 100%;
   display: flex;
@@ -31,53 +19,21 @@
   min-height: 100vh;
 }
 
-/* Global Body Styles */
 body {
   background: linear-gradient(to bottom, var(--background-color), #e4e7f2);
   color: var(--text-color);
-  font-family: 'Lora', serif; /* Lora for body text */
+  font-family: 'Lora', serif;
   margin: 0;
   padding: 0;
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  overflow-y: scroll; /* Keep vertical scrolling */
+  overflow-y: scroll;
 }
 
-/* Dark Mode */
-body.dark-mode {
-  background: linear-gradient(to bottom, var(--dark-background-color), #1c1c1c);
-  color: var(--dark-text-color);
-}
-
-body.dark-mode header {
-  background-color: var(--dark-header-bg);
-}
-
-body.dark-mode footer {
-  background-color: var(--dark-footer-bg);
-}
-
-body.dark-mode .card {
-  background-color: var(--dark-card-bg);
-  box-shadow: 0 2px 10px var(--dark-card-shadow);
-}
-
-body.dark-mode button {
-  background-color: var(--primary-color);
-  color: var(--dark-text-color);
-}
-
-body.dark-mode button:hover {
-  background-color: var(--secondary-color);
-}
-
-/* Hide vertical scrollbar */
 body::-webkit-scrollbar {
   display: none;
 }
-
-/* Optionally hide horizontal scrollbar too */
 body::-webkit-scrollbar:horizontal {
   display: none;
 }
@@ -87,12 +43,10 @@ body::-webkit-scrollbar:horizontal {
   flex-direction: column;
   min-height: 100vh;
 }
-
 .main-content {
   flex: 1;
 }
 
-/* Header & Footer */
 header {
   background-color: var(--header-bg);
   color: var(--primary-color);
@@ -116,20 +70,14 @@ footer {
   will-change: filter;
   transition: filter 300ms;
 }
-
 .logo:hover {
   filter: drop-shadow(0 0 2em var(--primary-color));
 }
 
 @keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
-
 @media (prefers-reduced-motion: no-preference) {
   a:nth-of-type(2) .logo {
     animation: logo-spin infinite 20s linear;
@@ -147,27 +95,14 @@ footer {
     transform: scale(1);
   }
 }
-
-/* Apply the animation to the welcome section */
 .welcome-animation {
   animation: fadeInScale 1.5s ease-out;
 }
+.welcome-animation h1 { animation-delay: 0.3s; }
+.welcome-animation p { animation-delay: 0.6s; }
+.welcome-animation a { animation-delay: 0.9s; }
 
-/* Optional: Add delay for the text and button elements */
-.welcome-animation h1 {
-  animation-delay: 0.3s;
-}
-
-.welcome-animation p {
-  animation-delay: 0.6s;
-}
-
-.welcome-animation a {
-  animation-delay: 0.9s;
-}
-
-
-/*for main banner section in home page */
+/* Main banner animation */
 @keyframes zoomIn {
   0% {
     transform: scale(0.95);
@@ -178,11 +113,9 @@ footer {
     opacity: 1;
   }
 }
-
 .animate-zoom-in {
   animation: zoomIn 1s ease-out forwards;
 }
-
 
 /* Card Styling */
 .card {
@@ -191,9 +124,8 @@ footer {
   border-radius: 10px;
   box-shadow: 0 2px 10px var(--card-shadow);
 }
-
 .read-the-docs {
-  color: #555555; /* Slightly darker gray for readability */
+  color: #555555;
 }
 
 button {
@@ -205,12 +137,9 @@ button {
   cursor: pointer;
   transition: background-color 0.3s ease;
 }
-
 button:hover {
   background-color: var(--secondary-color);
 }
-
-/* Accessibility Focus State for Buttons */
 button:focus {
   outline: 2px solid var(--primary-color);
   outline-offset: 2px;
@@ -218,66 +147,38 @@ button:focus {
 
 /* Mobile Responsiveness */
 @media (max-width: 768px) {
-  .card {
-    padding: 1em;
-  }
-  header, footer {
-    padding: 10px;
-  }
+  .card { padding: 1em; }
+  header, footer { padding: 10px; }
 }
 
-/* Theme Toggle Button */
-.theme-toggle-btn {
-  background-color: var(--primary-color);
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-
-.theme-toggle-btn:hover {
-  background-color: var(--secondary-color);
-}
-
-/* Welcome Section - Text Styling for Dynamic Theme */
+/* Headings and Typography */
 h1, h2, h3 {
-  font-family: 'Playfair Display', serif; /* Playfair Display for headings */
+  font-family: 'Playfair Display', serif;
 }
-
 h1 {
   color: var(--text-color);
-  font-size: 2.5rem; /* Adjust as needed */
+  font-size: 2.5rem;
   line-height: 1.2;
 }
-
-h1.dark-mode {
-  color: var(--dark-text-color);
-}
-
 p {
-  font-size: 1.125rem; /* Adjust for body text */
+  font-size: 1.125rem;
   color: var(--text-color);
 }
 
-p.dark-mode {
-  color: var(--dark-text-color);
-}
-
+/* Remove dark theme loading screen */
 .loading-screen {
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   height: 100vh;
-  background-color: #121212; /* dark background for dark mode */
-  color: white;
+  background-color: var(--background-color);
+  color: var(--text-color);
 }
 
 .spinner {
-  border: 6px solid rgba(255, 255, 255, 0.2);
-  border-top: 6px solid #ffffff;
+  border: 6px solid rgba(0, 0, 0, 0.1);
+  border-top: 6px solid var(--primary-color);
   border-radius: 50%;
   width: 50px;
   height: 50px;
@@ -286,10 +187,6 @@ p.dark-mode {
 }
 
 @keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }

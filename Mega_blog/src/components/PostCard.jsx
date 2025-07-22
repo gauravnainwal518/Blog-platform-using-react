@@ -1,11 +1,9 @@
 import React, { useEffect, useState } from "react";
 import appwriteService from "../appwrite/config";
 import { Link } from "react-router-dom";
-import { useSelector } from "react-redux";
 
 function PostCard({ $id, title, featuredImage, createdAt, author }) {
   const [imageUrl, setImageUrl] = useState("/default-image.jpg");
-  const isDarkMode = useSelector((state) => state.theme.isDarkMode);
 
   useEffect(() => {
     if (featuredImage) {
@@ -17,7 +15,7 @@ function PostCard({ $id, title, featuredImage, createdAt, author }) {
   const formattedDate = new Date(createdAt).toLocaleDateString();
   const formattedTime = new Date(createdAt).toLocaleTimeString();
 
-  //  Strip HTML tags from title using DOMParser
+  // Strip HTML tags from title
   const parseHtmlToText = (html) => {
     const doc = new DOMParser().parseFromString(html, "text/html");
     return doc.body.textContent || "";
@@ -27,13 +25,7 @@ function PostCard({ $id, title, featuredImage, createdAt, author }) {
 
   return (
     <Link to={`/post/${$id}`}>
-      <div
-        className={`w-full border rounded-xl p-4 shadow-md hover:shadow-lg transition-all duration-300 ease-in-out ${
-          isDarkMode
-            ? "bg-gray-800 border-gray-600 text-white"
-            : "bg-white border-gray-300 text-gray-800"
-        }`}
-      >
+      <div className="w-full border border-gray-300 rounded-xl p-4 shadow-md hover:shadow-lg transition-all duration-300 ease-in-out bg-white text-gray-800">
         <div className="w-full justify-center mb-4">
           <img
             src={imageUrl}
@@ -44,12 +36,12 @@ function PostCard({ $id, title, featuredImage, createdAt, author }) {
 
         <h2 className="text-xl font-semibold text-center">{cleanTitle}</h2>
 
-        <p className="text-sm text-gray-400 mt-2 text-center">
+        <p className="text-sm text-gray-500 mt-2 text-center">
           Published on: {formattedDate} at {formattedTime}
         </p>
 
         {author && (
-          <p className="text-sm text-gray-400 mt-1 text-center">
+          <p className="text-sm text-gray-500 mt-1 text-center">
             Published by: <span className="font-medium">{author}</span>
           </p>
         )}

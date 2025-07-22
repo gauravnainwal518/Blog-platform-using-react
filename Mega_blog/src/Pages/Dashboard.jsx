@@ -6,8 +6,6 @@ import dayjs from "dayjs";
 
 function Dashboard() {
   const userData = useSelector((state) => state.auth.userData);
-  const isDarkMode = useSelector((state) => state.theme.isDarkMode);
-
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -39,9 +37,7 @@ function Dashboard() {
       {[...Array(6)].map((_, i) => (
         <div
           key={i}
-          className={`rounded-xl p-4 animate-pulse space-y-3 shadow-md h-56 ${
-            isDarkMode ? "bg-gray-800" : "bg-white"
-          }`}
+          className="rounded-xl p-4 animate-pulse space-y-3 shadow-md h-56 bg-white"
         >
           <div className="w-1/2 h-4 rounded bg-gray-400/60"></div>
           <div className="w-2/3 h-6 rounded bg-gray-500/50"></div>
@@ -54,9 +50,7 @@ function Dashboard() {
   const renderPostCard = (post, isDraft = false) => (
     <div
       key={post.$id}
-      className={`p-5 border rounded-2xl shadow-sm hover:shadow-md transition flex flex-col justify-between ${
-        isDarkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"
-      }`}
+      className="p-5 border border-gray-200 rounded-2xl shadow-sm hover:shadow-md transition flex flex-col justify-between bg-white"
     >
       <div>
         <div className="flex justify-between items-center mb-2">
@@ -104,11 +98,7 @@ function Dashboard() {
   );
 
   return (
-    <div
-      className={`min-h-screen px-6 py-10 transition-colors duration-300 ${
-        isDarkMode ? "bg-gray-900 text-white" : "bg-gray-50 text-gray-900"
-      }`}
-    >
+    <div className="min-h-screen px-6 py-10 bg-gray-50 text-gray-900">
       <div className="max-w-6xl mx-auto">
         <h1 className="text-4xl font-extrabold text-center mb-10 tracking-tight">
           Your Dashboard

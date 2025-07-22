@@ -48,26 +48,26 @@ function Drafts() {
   if (loading) return <Loader />;
 
   return (
-    <div className="min-h-screen w-full bg-white dark:bg-black text-black dark:text-white py-10 px-4">
+    <div className="min-h-screen w-full bg-white text-black py-10 px-4">
       <h1 className="text-3xl font-bold mb-6">Your Drafts</h1>
 
       {drafts.length === 0 ? (
-        <p className="text-gray-600 dark:text-gray-300">No drafts available.</p>
+        <p className="text-gray-600">No drafts available.</p>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {drafts.map((draft) => (
             <div
               key={draft.$id}
-              className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 shadow-md hover:shadow-xl transition"
+              className="bg-white border border-gray-200 rounded-lg p-4 shadow-md hover:shadow-xl transition"
             >
               <div
                 className="cursor-pointer"
                 onClick={() => navigate(`/edit-post/${draft.slug}`)}
               >
-                <h2 className="text-xl font-semibold text-blue-600 dark:text-blue-300">
+                <h2 className="text-xl font-semibold text-blue-600">
                   {draft.title || "Untitled Draft"}
                 </h2>
-                <p className="text-sm text-gray-500 mt-2 dark:text-gray-400">
+                <p className="text-sm text-gray-500 mt-2">
                   Last updated: {new Date(draft.updatedAt).toLocaleString()}
                 </p>
               </div>

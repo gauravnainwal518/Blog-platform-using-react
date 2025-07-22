@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { useSelector } from "react-redux";
 import authService from "../appwrite/auth";
 
 const ResetPassword = () => {
@@ -12,8 +11,6 @@ const ResetPassword = () => {
 
   const [userId, setUserId] = useState(null);
   const [secret, setSecret] = useState(null);
-
-  const isDarkMode = useSelector((state) => state.theme.isDarkMode);
 
   useEffect(() => {
     const queryParams = new URLSearchParams(location.search);
@@ -49,11 +46,7 @@ const ResetPassword = () => {
   };
 
   return (
-    <div
-      className={`flex flex-col items-center justify-center min-h-screen px-4 ${
-        isDarkMode ? "bg-gray-900 text-white" : "bg-white text-gray-900"
-      }`}
-    >
+    <div className="flex flex-col items-center justify-center min-h-screen px-4 bg-white text-gray-900">
       <h2 className="text-2xl font-bold mb-4">Reset Your Password</h2>
       <form
         onSubmit={handleSubmit}
@@ -64,11 +57,7 @@ const ResetPassword = () => {
           placeholder="New Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className={`p-2 border rounded focus:outline-none focus:border-purple-500 ${
-            isDarkMode
-              ? "bg-gray-700 text-white border-gray-600 placeholder-gray-400"
-              : "bg-white text-gray-900 border-gray-300 placeholder-gray-500"
-          }`}
+          className="p-2 border rounded focus:outline-none focus:border-purple-500 bg-white text-gray-900 border-gray-300 placeholder-gray-500"
           required
         />
         {error && <div className="text-red-500">{error}</div>}

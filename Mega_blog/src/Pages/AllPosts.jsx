@@ -8,12 +8,8 @@ import dayjs from "dayjs";
 import { setPosts } from "../store/postSlice";
 import appwriteService from "../appwrite/config";
 
-const LoaderCard = ({ isDarkMode }) => (
-  <div
-    className={`h-60 animate-pulse rounded-xl p-5 space-y-4 shadow ${
-      isDarkMode ? "bg-gray-800" : "bg-white"
-    }`}
-  >
+const LoaderCard = () => (
+  <div className="h-60 animate-pulse rounded-xl p-5 space-y-4 shadow bg-white">
     <div className="h-4 w-1/3 rounded bg-gray-400/50"></div>
     <div className="h-6 w-2/3 rounded bg-gray-500/50"></div>
     <div className="h-16 w-full rounded bg-gray-300/40"></div>
@@ -29,18 +25,15 @@ const AllPosts = () => {
 
   const posts = useSelector((state) => state.posts.allPosts);
   const userData = useSelector((state) => state.auth.userData);
-  const isDarkMode = useSelector((state) => state.theme.isDarkMode);
 
   useEffect(() => {
     async function fetchAndFilterPosts() {
       try {
         const res = await appwriteService.getAllPosts();
         if (res && res.documents) {
-          console.log("Fetched posts:", res.documents);
           const published = res.documents.filter(
             (post) => post.status?.toLowerCase() === "active"
           );
-          console.log("Filtered published posts:", published);
           dispatch(setPosts(published));
         }
       } catch (e) {
@@ -77,11 +70,7 @@ const AllPosts = () => {
   const filteredPosts = filterPosts();
 
   return (
-    <div
-      className={`w-full min-h-screen py-10 px-4 sm:px-6 lg:px-8 ${
-        isDarkMode ? "bg-gray-900 text-white" : "bg-gray-100 text-gray-900"
-      }`}
-    >
+    <div className="w-full min-h-screen py-10 px-4 sm:px-6 lg:px-8 bg-gray-100 text-gray-900">
       <h1 className="text-4xl font-bold text-center mb-10">
         {filter === "mine" ? "Your Posts" : "All Posts"}
       </h1>
@@ -92,8 +81,6 @@ const AllPosts = () => {
           className={`px-5 py-2 rounded-full font-medium transition ${
             filter === "all"
               ? "bg-blue-600 text-white"
-              : isDarkMode
-              ? "bg-gray-800 text-white border border-gray-700"
               : "bg-white text-gray-900 border border-gray-300"
           }`}
         >
@@ -104,8 +91,6 @@ const AllPosts = () => {
           className={`px-5 py-2 rounded-full font-medium transition ${
             filter === "mine"
               ? "bg-blue-600 text-white"
-              : isDarkMode
-              ? "bg-gray-800 text-white border border-gray-700"
               : "bg-white text-gray-900 border border-gray-300"
           }`}
         >
@@ -115,11 +100,7 @@ const AllPosts = () => {
         <select
           value={sortBy}
           onChange={(e) => setSortBy(e.target.value)}
-          className={`px-4 py-2 rounded-md border ${
-            isDarkMode
-              ? "bg-gray-800 text-white border-gray-600"
-              : "bg-white text-gray-900 border-gray-300"
-          }`}
+          className="px-4 py-2 rounded-md border bg-white text-gray-900 border-gray-300"
         >
           <option value="latest">Sort by Latest</option>
           <option value="oldest">Sort by Oldest</option>
@@ -130,7 +111,7 @@ const AllPosts = () => {
       {loading ? (
         <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {[...Array(6)].map((_, i) => (
-            <LoaderCard key={i} isDarkMode={isDarkMode} />
+            <LoaderCard key={i} />
           ))}
         </div>
       ) : filteredPosts.length === 0 ? (
@@ -142,11 +123,7 @@ const AllPosts = () => {
           {filteredPosts.map((post) => (
             <div
               key={post.$id}
-              className={`rounded-xl shadow-md transition hover:shadow-lg flex flex-col justify-between ${
-                isDarkMode
-                  ? "bg-gray-800 text-white border border-gray-700"
-                  : "bg-white text-gray-900 border border-gray-200"
-              }`}
+              className="rounded-xl bg-white border border-gray-200 shadow-md transition hover:shadow-lg flex flex-col justify-between"
             >
               <div className="p-5">
                 <div className="mb-1 text-sm opacity-70">
@@ -155,7 +132,7 @@ const AllPosts = () => {
                     : "Unknown Date"}
                 </div>
                 {post.author && (
-                  <div className="mb-2 text-xs text-gray-400 dark:text-gray-300 italic">
+                  <div className="mb-2 text-xs text-gray-400 italic">
                     Published by {post.author}
                   </div>
                 )}

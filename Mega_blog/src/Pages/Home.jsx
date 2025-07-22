@@ -1,12 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import { PostCard } from "../components";
 import { FiSearch, FiArrowRight } from "react-icons/fi";
 import dayjs from "dayjs";
+import illustration from "../assets/earth-pen.png";
 
 function Home() {
-  const isDarkMode = useSelector((state) => state.theme.isDarkMode);
   const posts = useSelector((state) => state.posts.allPosts);
   const userData = useSelector((state) => state.auth?.userData);
 
@@ -15,60 +15,70 @@ function Home() {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedTag, setSelectedTag] = useState("all");
 
-  const uniqueCategories = [
-    ...new Set(posts.map((post) => post.category || "Uncategorized")),
-  ];
-  const uniqueTags = [...new Set(posts.flatMap((post) => post.tags || []))];
+  const uniqueCategories = useMemo(
+    () => [...new Set(posts.map((post) => post.category || "Uncategorized"))],
+    [posts]
+  );
+  const uniqueTags = useMemo(
+    () => [...new Set(posts.flatMap((post) => post.tags || []))],
+    [posts]
+  );
 
-  const filteredPosts = posts.filter((post) => {
-    // Ensure only published/active posts are shown
-    if (post.status !== "active") return false;
-
-    const matchesSearch = post.title
-      ?.toLowerCase()
-      .includes(searchQuery.toLowerCase());
-    const matchesCategory =
-      selectedCategory === "all" || post.category === selectedCategory;
-    const matchesTag =
-      selectedTag === "all" || (post.tags || []).includes(selectedTag);
-    return matchesSearch && matchesCategory && matchesTag;
-  });
+  const filteredPosts = useMemo(() => {
+    return posts.filter((post) => {
+      if (post.status !== "active") return false;
+      const matchesSearch = post.title
+        ?.toLowerCase()
+        .includes(searchQuery.toLowerCase());
+      const matchesCategory =
+        selectedCategory === "all" || post.category === selectedCategory;
+      const matchesTag =
+        selectedTag === "all" || (post.tags || []).includes(selectedTag);
+      return matchesSearch && matchesCategory && matchesTag;
+    });
+  }, [posts, searchQuery, selectedCategory, selectedTag]);
 
   return (
-    <div
-      className={`w-full min-h-screen ${
-        isDarkMode ? "bg-gray-900 text-white" : "bg-white text-gray-900"
-      }`}
-    >
-      {/* Welcome Section */}
+    <div className="w-full min-h-screen bg-white text-gray-900 transition-colors">
+      {/* Hero Section */}
+      <section className="min-h-[60vh] flex items-center justify-center px-4 text-center bg-white">
+        <div>
+          <img
+            src={illustration}
+            alt="Earth and Pen"
+            className="w-64 mx-auto animate-bounceSlow transition-all"
+          />
+          <h1 className="text-3xl sm:text-5xl font-bold mt-6 text-black animate-fadeIn">
+            Create. Write. Inspire.
+          </h1>
+          <p className="text-lg mt-3 text-gray-700 animate-fadeIn delay-200">
+            A space for your thoughts to shape the world.
+          </p>
+        </div>
+      </section>
+
+      {/* Welcome + Search Section */}
       <section className="w-full py-16 text-center px-4">
         <div className="max-w-screen-md mx-auto space-y-6">
-          {/* Search Bar */}
           <div className="relative flex justify-center">
             <input
               type="text"
               placeholder="Search posts..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className={`w-full max-w-xl py-3 px-5 rounded-full shadow-md text-base outline-none transition ${
-                isDarkMode
-                  ? "bg-gray-800 text-white placeholder-gray-400"
-                  : "bg-gray-100 text-gray-800 placeholder-gray-500"
-              }`}
+              className="w-full max-w-xl py-3 px-5 rounded-full shadow-md text-base outline-none bg-gray-100 text-gray-800 placeholder-gray-500 transition"
+              aria-label="Search posts"
             />
             <FiSearch
               size={22}
-              className={`absolute right-6 top-1/2 transform -translate-y-1/2 ${
-                isDarkMode ? "text-gray-300" : "text-gray-600"
-              }`}
+              className="absolute right-6 top-1/2 transform -translate-y-1/2 text-gray-600"
             />
           </div>
 
           <h1 className="text-4xl sm:text-5xl font-extrabold font-playfair">
-            Welcome to{" "}
-            <span className="text-blue-600 dark:text-blue-400">TypeNest</span>
+            Welcome to <span className="text-blue-600">TypeNest</span>
           </h1>
-          <p className="text-lg sm:text-xl font-lora text-gray-600 dark:text-gray-300">
+          <p className="text-lg sm:text-xl font-lora text-gray-600">
             Unleash your creativity, share your knowledge, and inspire the
             world—one blog at a time.
           </p>
@@ -88,7 +98,7 @@ function Home() {
           <select
             value={selectedCategory}
             onChange={(e) => setSelectedCategory(e.target.value)}
-            className="px-4 py-2 rounded-md border dark:bg-gray-800 dark:text-white"
+            className="px-4 py-2 rounded-md border focus:outline-none focus:ring-2 focus:ring-blue-400 transition bg-white text-gray-800"
           >
             <option value="all">All Categories</option>
             {uniqueCategories.map((cat) => (
@@ -101,7 +111,7 @@ function Home() {
           <select
             value={selectedTag}
             onChange={(e) => setSelectedTag(e.target.value)}
-            className="px-4 py-2 rounded-md border dark:bg-gray-800 dark:text-white"
+            className="px-4 py-2 rounded-md border focus:outline-none focus:ring-2 focus:ring-blue-400 transition bg-white text-gray-800"
           >
             <option value="all">All Tags</option>
             {uniqueTags.map((tag) => (
@@ -119,34 +129,30 @@ function Home() {
           <div className="text-center text-lg font-semibold text-red-500">
             <Link
               to="/login"
-              className="font-bold text-xl text-blue-600 dark:text-blue-400 hover:underline transition"
+              className="font-bold text-xl text-blue-600 hover:underline transition"
             >
               You need to log in to view your posts
             </Link>
           </div>
         ) : filteredPosts.length === 0 ? (
-          <div className="text-center">
+          <div className="text-center space-y-4">
+            <p className="text-xl text-gray-500">
+              No posts match your filters.
+            </p>
             <Link
               to="/add-post"
-              className="inline-flex items-center text-blue-600 dark:text-blue-400 text-xl font-semibold hover:underline"
+              className="inline-flex items-center text-blue-600 text-xl font-semibold hover:underline"
             >
-              No posts found. Start writing <FiArrowRight className="ml-2" />
+              Start writing <FiArrowRight className="ml-2" />
             </Link>
           </div>
         ) : (
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 mb-10">
               {filteredPosts.slice(0, visiblePosts).map((post) => (
-                <div
-                  key={post.$id}
-                  className={`w-full p-4 rounded-xl transition-all duration-300 hover:scale-105 shadow ${
-                    isDarkMode
-                      ? "bg-gray-800 hover:bg-gray-700"
-                      : "bg-white hover:bg-gray-100"
-                  }`}
-                >
+                <div key={post.$id}>
                   <PostCard {...post} slug={post.$id} />
-                  <p className="text-sm mt-2 text-center text-gray-500 dark:text-gray-400">
+                  <p className="text-sm mt-2 text-center text-gray-500">
                     {post.createdAt
                       ? dayjs(post.createdAt).format("MMM D, YYYY")
                       : "Unknown Date"}
