@@ -19,7 +19,7 @@ function Footer() {
 
         {/* Copyright */}
         <p className="text-sm font-medium">
-          &copy; {new Date().getFullYear()} CodeNest. All rights reserved.
+          &copy; {new Date().getFullYear()} TypeNest. All rights reserved.
         </p>
       </div>
     </footer>
