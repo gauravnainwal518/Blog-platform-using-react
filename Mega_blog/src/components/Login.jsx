@@ -6,6 +6,7 @@ import authService from "../appwrite/auth";
 import { login as authLogin } from "../store/authSlice";
 import { setPosts } from "../store/postSlice";
 import { useForm } from "react-hook-form";
+import toast from "react-hot-toast";
 
 function Login() {
   const navigate = useNavigate();
@@ -54,8 +55,12 @@ function Login() {
     try {
       const email = prompt("Enter your email for password recovery:");
       if (!email) return;
+
       await authService.sendRecoveryEmail(email);
+
+      toast.success("Reset link sent to your email. Please check your inbox.");
     } catch (error) {
+      toast.error("Failed to send reset link."); // Optional: add error toast
       console.error("Failed to send password reset email.");
     }
   };

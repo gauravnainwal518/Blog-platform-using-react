@@ -8,6 +8,8 @@ import { Outlet } from "react-router-dom";
 import service from "./appwrite/config";
 import Loader from "./components/Loader/loader";
 
+import { Toaster } from "react-hot-toast";
+
 function App() {
   const [loading, setLoading] = useState(true);
   const dispatch = useDispatch();
@@ -49,6 +51,8 @@ function App() {
 
   return !loading ? (
     <div className="app-container">
+      {/*  Toaster for global toast support */}
+      <Toaster position="bottom-right" reverseOrder={false} />
       <Header />
       <main className="main-content">
         <Outlet />

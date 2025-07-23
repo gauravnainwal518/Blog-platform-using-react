@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import authService from "../appwrite/auth";
+import toast from "react-hot-toast";
 
 const ResetPassword = () => {
   const [password, setPassword] = useState("");
@@ -36,8 +37,10 @@ const ResetPassword = () => {
     setLoading(true);
     try {
       await authService.confirmRecovery(userId, secret, password);
+      toast.success("Password reset successfully.");
       navigate("/login");
     } catch (error) {
+      toast.error("Password reset failed. Please try again.");
       setError("Password reset failed. Please try again.");
       console.error("Error resetting password", error);
     } finally {
