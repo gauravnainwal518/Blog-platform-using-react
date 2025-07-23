@@ -37,6 +37,7 @@ function Login() {
         }
       }
     } catch (error) {
+      toast.error("Login failed.");
       console.error(error.message || "Login failed.");
     } finally {
       setIsLoading(false);
@@ -57,11 +58,35 @@ function Login() {
       if (!email) return;
 
       await authService.sendRecoveryEmail(email);
-
       toast.success("Reset link sent to your email. Please check your inbox.");
     } catch (error) {
-      toast.error("Failed to send reset link."); // Optional: add error toast
+      toast.error("Failed to send reset link.");
       console.error("Failed to send password reset email.");
+    }
+  };
+
+  // Demo Login Function
+  const handleDemoLogin = async () => {
+    setIsLoading(true);
+    try {
+      const { user, posts } = await authService.login({
+        email: import.meta.env.VITE_DEMO_EMAIL,
+        password: import.meta.env.VITE_DEMO_PASSWORD,
+      });
+
+      if (user && user.emailVerification) {
+        dispatch(authLogin({ userData: user }));
+        dispatch(setPosts(posts));
+        toast.success("Logged in as Demo User!");
+        navigate("/");
+      } else {
+        toast.error("Demo email is not verified.");
+      }
+    } catch (error) {
+      toast.error("Demo login failed.");
+      console.error("Demo login error:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -145,6 +170,18 @@ function Login() {
             </button>
           </div>
         </form>
+
+        {/*  Demo Login Button */}
+        <div className="mt-6">
+          <button
+            type="button"
+            onClick={handleDemoLogin}
+            className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg"
+            disabled={isLoading}
+          >
+            {isLoading ? "Logging in as Demo..." : "Use Demo Account"}
+          </button>
+        </div>
       </div>
     </div>
   );
